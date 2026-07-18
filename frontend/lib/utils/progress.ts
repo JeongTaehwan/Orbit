@@ -1,11 +1,9 @@
 /**
  * 행성 진행률 계산 (프론트엔드용).
- *
- * 백엔드 services.calculate_progress 와 동일한 규칙.
- * 화면에서 행성 카드의 진행률 바 등을 그릴 때 재사용한다.
+ * 백엔드 services/progress.py 와 동일한 규칙.
  */
 
-export type Difficulty = "easy" | "normal" | "hard";
+import type { Difficulty } from "@/types/planet";
 
 /** 난이도별 완료에 필요한 기록 수 (백엔드 REQUIRED_RECORDS 와 일치) */
 export const REQUIRED_RECORDS: Record<Difficulty, number> = {
@@ -24,6 +22,6 @@ export function calculateProgress(
   difficulty: Difficulty,
 ): ProgressResult {
   const required = REQUIRED_RECORDS[difficulty];
-  const progress = Math.min((recordCount / required) * 100, 100); // 100 초과 방지
+  const progress = Math.min((recordCount / required) * 100, 100);
   return { progress, isCompleted: progress >= 100 };
 }

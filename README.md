@@ -58,8 +58,8 @@ npm run dev
 cd backend
 python3 -m venv venv
 source venv/bin/activate
-pip install "fastapi[standard]"
-fastapi dev main.py
+pip install -r requirements.txt
+fastapi dev app/main.py
 # http://localhost:8000
 # API 문서: http://localhost:8000/docs
 ```

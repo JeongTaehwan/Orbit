@@ -14,8 +14,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from database import Base, get_db
-from main import app
+from app.core.database import Base, get_db
+from app.main import app
 
 # 메모리 SQLite. StaticPool + check_same_thread=False 는
 # "여러 곳에서 같은 메모리 DB에 접근"하게 해주는 표준 설정.

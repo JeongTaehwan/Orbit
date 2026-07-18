@@ -6,7 +6,7 @@ DB도 API도 필요 없는 '순수 계산'이라 가장 빠르고 단순한 테�
 
 import pytest
 
-from services import calculate_progress
+from app.services.progress import calculate_progress
 
 
 def test_easy_partial_progress():
