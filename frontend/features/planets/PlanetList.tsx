@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button, Input, Text } from "@usetaehwan/ui";
 import { api } from "@/lib/api";
 import type { Difficulty, Planet } from "@/types/planet";
 import { PlanetCard } from "./PlanetCard";
@@ -64,16 +65,17 @@ export function PlanetList() {
     <>
       {/* 새 행성 생성 폼 */}
       <form onSubmit={handleCreate} className="mb-6 flex gap-2">
-        <input
+        <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="학습 주제 이름"
-          className="flex-1 rounded border px-3 py-2"
+          className="flex-1"
         />
+        {/* 패키지에 Select 컴포넌트가 없어 네이티브 select 를 토큰 유틸리티로 스타일링 */}
         <select
           value={difficulty}
           onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-          className="rounded border px-2 py-2"
+          className="rounded-md border border-border bg-surface px-3 py-2 text-fg"
         >
           {DIFFICULTIES.map((d) => (
             <option key={d} value={d}>
@@ -81,27 +83,23 @@ export function PlanetList() {
             </option>
           ))}
         </select>
-        <button
-          type="submit"
-          disabled={creating}
-          className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
-        >
+        <Button type="submit" variant="primary" disabled={creating}>
           {creating ? "생성 중…" : "생성"}
-        </button>
+        </Button>
       </form>
 
       {error && (
-        <p className="mb-4 rounded bg-red-100 px-3 py-2 text-sm text-red-700">
+        <Text variant="small" as="p" className="mb-4 text-danger">
           {error}
-        </p>
+        </Text>
       )}
 
       {loading ? (
-        <p className="text-gray-500">불러오는 중…</p>
+        <Text variant="muted">불러오는 중…</Text>
       ) : planets.length === 0 ? (
-        <p className="text-gray-500">아직 행성이 없습니다. 위에서 만들어 보세요.</p>
+        <Text variant="muted">아직 행성이 없습니다. 위에서 만들어 보세요.</Text>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
           {planets.map((planet) => (
             <PlanetCard
               key={planet.id}
@@ -111,7 +109,7 @@ export function PlanetList() {
               onError={setError}
             />
           ))}
-        </ul>
+        </div>
       )}
     </>
   );

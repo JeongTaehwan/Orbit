@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Badge, Button, Card, Heading, Input, Text } from "@usetaehwan/ui";
 import { api } from "@/lib/api";
 import type { Planet } from "@/types/planet";
 
@@ -35,50 +36,41 @@ export function PlanetCard({
   }
 
   return (
-    <li className="rounded border p-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <span className="font-medium">{planet.name}</span>
-          <span className="ml-2 text-xs text-gray-500">[{planet.difficulty}]</span>
-          {planet.is_completed && (
-            <span className="ml-2 text-xs text-green-600">✓ 완료</span>
-          )}
+    <Card>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Heading level={3}>{planet.name}</Heading>
+          <Badge variant="neutral">{planet.difficulty}</Badge>
+          {planet.is_completed && <Badge variant="brand">완료</Badge>}
         </div>
-        <button
-          onClick={() => onDelete(planet.id)}
-          className="text-sm text-red-600 hover:underline"
-        >
+        <Button variant="ghost" size="sm" onClick={() => onDelete(planet.id)}>
           삭제
-        </button>
+        </Button>
       </div>
 
-      {/* 진행도 바 */}
-      <div className="mt-2 h-2 w-full rounded bg-gray-200">
+      {/* 진행도 바 (토큰 유틸리티만: 트랙 brand-subtle, 채움 brand) */}
+      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-brand-subtle">
         <div
-          className="h-2 rounded bg-blue-500"
+          className="h-full rounded-full bg-brand"
           style={{ width: `${planet.progress}%` }}
         />
       </div>
-      <p className="mt-1 text-xs text-gray-500">
+      <Text variant="small" as="p" className="mt-1 text-fg-muted">
         진행도 {Math.round(planet.progress)}%
-      </p>
+      </Text>
 
       {/* 기록 추가 */}
       <form onSubmit={handleAddRecord} className="mt-3 flex gap-2">
-        <input
+        <Input
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="학습 기록 내용"
-          className="flex-1 rounded border px-2 py-1 text-sm"
+          className="flex-1"
         />
-        <button
-          type="submit"
-          disabled={adding}
-          className="rounded border px-3 py-1 text-sm disabled:opacity-50"
-        >
+        <Button type="submit" variant="secondary" size="sm" disabled={adding}>
           {adding ? "추가 중…" : "기록 추가"}
-        </button>
+        </Button>
       </form>
-    </li>
+    </Card>
   );
 }

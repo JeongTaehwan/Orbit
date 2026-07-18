@@ -1,26 +1,42 @@
 @import "tailwindcss";
 
+/* 디자인 시스템 컴포넌트가 쓰는 유틸리티(bg-surface, text-fg 등)를
+   Tailwind가 생성하도록 node_modules 안의 패키지 소스를 스캔 대상에 추가.
+   (Tailwind v4는 기본적으로 node_modules를 스캔하지 않으므로 필수) */
+@source "../node_modules/@usetaehwan/ui/dist";
+
+/* 패키지 기본 토큰 (웜 뉴트럴 + 타이포/스페이싱/라운드/섀도우) */
+@import "@usetaehwan/ui/tokens.css";
+
+/* ── Orbit 우주 테마 ──
+   컬러 토큰만 덮어쓴다. 타이포/스페이싱/라운드/섀도우는 패키지 값 유지.
+   Tailwind v4 @theme 는 병합되며 같은 변수는 나중 선언이 이긴다 → 충돌 없음.
+   컴포넌트가 var(--color-*)를 참조하므로 값만 바꾸면 전체가 우주 테마로 바뀜. */
+@theme {
+  --color-bg: #0a0d16;
+  --color-surface: #141a2a;
+  --color-border: #29344c;
+
+  --color-fg: #eaeef7;
+  --color-fg-body: #a6b0c6;
+  --color-fg-muted: #6a7488;
+
+  --color-brand: #5cc9d6;
+  --color-brand-hover: #82dee9;
+  --color-brand-subtle: #143039;
+  --color-on-brand: #0a0d16; /* 밝은 시안 브랜드 채움 위 글자색 — 가독성 위해 어둡게 */
+
+  --color-success: #6fcf97;
+  --color-warning: #e0b15a;
+  --color-danger: #e07a6e;
+}
+
+/* Orbit 은 다크가 기본 — 네이티브 폼 컨트롤·스크롤바도 다크로 렌더 */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-fg-body);
 }
