@@ -1,0 +1,13 @@
+# Orbit 백엔드 의존성
+# 설치: pip install -r requirements.txt
+
+fastapi==0.139.2          # 웹 프레임워크
+uvicorn==0.51.0           # ASGI 서버 (FastAPI 앱을 실행)
+pydantic==2.13.4          # 스키마 검증 (schemas.py)
+sqlalchemy==2.0.51        # ORM (models.py, database.py)
+psycopg2-binary==2.9.12   # PostgreSQL 드라이버 (SQLAlchemy가 내부에서 사용)
+python-dotenv==1.2.2      # .env 파일 로딩
+
+# --- 테스트용 (개발 환경에서만 필요) ---
+pytest==9.1.1             # 테스트 러너
+httpx==0.28.1             # TestClient가 내부에서 API 호출에 사용
