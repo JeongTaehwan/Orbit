@@ -6,7 +6,7 @@ from app.schemas.planet import (
     PlanetCreate,
     PlanetResponse,
 )
-from app.schemas.record import RecordCreate, RecordResponse
+from app.schemas.record import RecordCreate, RecordResponse, RecordSummary
 from app.schemas.user import UserResponse
 
 __all__ = [
@@ -16,5 +16,6 @@ __all__ = [
     "PlanetResponse",
     "RecordCreate",
     "RecordResponse",
+    "RecordSummary",
     "UserResponse",
 ]
