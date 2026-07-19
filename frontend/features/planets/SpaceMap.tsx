@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Container, Heading, Text } from "@usetaehwan/ui";
+import { Button, Container, Text } from "@usetaehwan/ui";
+import { Header } from "@/components/Header";
 import { Modal } from "@/components/ui/Modal";
 import { api } from "@/lib/api";
 import type { Planet } from "@/types/planet";
@@ -47,17 +48,16 @@ export function SpaceMap() {
   return (
     <main className="py-10">
       <Container size="lg">
-        {/* 헤더 */}
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <Heading level={1} className="mb-1">
-              Orbit
-            </Heading>
-            <Text variant="muted">우주 지도 — 내 학습 행성들</Text>
-          </div>
-          <Button variant="primary" onClick={() => setModalOpen(true)}>
-            새 행성 만들기
-          </Button>
+        {/* 헤더 (로고 + 새 행성 버튼) */}
+        <div className="mb-8">
+          <Header titleAs="h1" size={48}>
+            <Button variant="primary" onClick={() => setModalOpen(true)}>
+              새 행성 만들기
+            </Button>
+          </Header>
+          <Text variant="muted" className="mt-2">
+            우주 지도 — 내 학습 행성들
+          </Text>
         </div>
 
         {/* 통계 */}

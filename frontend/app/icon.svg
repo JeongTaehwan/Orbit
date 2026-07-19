@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Orbital Monogram: 'O'=궤도 링 + 궤도 위 점 하나.
+       파비콘은 브라우저가 앱 CSS 없이 단독 렌더하므로 토큰 값을 리터럴로 사용.
+       배경 딥 스페이스(#0A0D16), 링·점 브랜드 시안(#5CC9D6). 선 굵어 16px에서도 유지. -->
+  <rect width="32" height="32" rx="7" fill="#0A0D16"/>
+  <circle cx="16" cy="16" r="9" fill="none" stroke="#5CC9D6" stroke-width="3.5"/>
+  <circle cx="22.4" cy="9.6" r="3.6" fill="#5CC9D6"/>
+</svg>
