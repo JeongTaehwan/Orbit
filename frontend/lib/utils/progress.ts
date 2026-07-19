@@ -25,3 +25,12 @@ export function calculateProgress(
   const progress = Math.min((recordCount / required) * 100, 100);
   return { progress, isCompleted: progress >= 100 };
 }
+
+/** 진행도(%) → 테라포밍 단계 이름 (SVG 행성의 5단계와 대응) */
+export function stageName(progress: number): string {
+  if (progress >= 100) return "완성";
+  if (progress >= 75) return "생명 탄생";
+  if (progress >= 50) return "바다 출현";
+  if (progress >= 25) return "대기 생성";
+  return "황량기";
+}

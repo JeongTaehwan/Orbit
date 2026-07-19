@@ -36,6 +36,7 @@ class PlanetResponse(BaseModel):
     created_at: datetime
 
     # 계산값 (DB에 없음 → 엔드포인트에서 채워 전달)
+    record_count: int = Field(..., ge=0, description="이 행성의 기록 수")
     progress: float = Field(..., ge=0, le=100, description="진행률 % (0~100)")
     is_completed: bool
 
