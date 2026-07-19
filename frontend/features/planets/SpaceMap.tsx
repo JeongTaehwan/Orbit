@@ -1,0 +1,101 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Button, Container, Heading, Text } from "@usetaehwan/ui";
+import { Modal } from "@/components/ui/Modal";
+import { api } from "@/lib/api";
+import type { Planet } from "@/types/planet";
+import { CreatePlanetForm } from "./CreatePlanetForm";
+import { PlanetMapCard } from "./PlanetMapCard";
+
+// 통계 타일
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="flex flex-1 flex-col items-center rounded-lg border border-border bg-surface px-4 py-3">
+      <span className="text-2xl font-semibold text-fg">{value}</span>
+      <span className="text-xs text-fg-muted">{label}</span>
+    </div>
+  );
+}
+
+// 우주 지도: 내 행성들을 모아 보는 메인 화면.
+export function SpaceMap() {
+  const [planets, setPlanets] = useState<Planet[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  async function load() {
+    setLoading(true);
+    setError(null);
+    try {
+      setPlanets(await api.listPlanets());
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "불러오기 실패");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const totalRecords = planets.reduce((sum, p) => sum + p.record_count, 0);
+  const completed = planets.filter((p) => p.is_completed).length;
+
+  return (
+    <main className="py-10">
+      <Container size="lg">
+        {/* 헤더 */}
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <Heading level={1} className="mb-1">
+              Orbit
+            </Heading>
+            <Text variant="muted">우주 지도 — 내 학습 행성들</Text>
+          </div>
+          <Button variant="primary" onClick={() => setModalOpen(true)}>
+            새 행성 만들기
+          </Button>
+        </div>
+
+        {/* 통계 */}
+        <div className="mb-8 flex gap-3">
+          <Stat label="행성" value={planets.length} />
+          <Stat label="총 기록" value={totalRecords} />
+          <Stat label="완성" value={completed} />
+        </div>
+
+        {error && (
+          <p className="mb-4 rounded bg-danger/15 px-3 py-2 text-sm text-danger" role="alert">
+            {error}
+          </p>
+        )}
+
+        {/* 목록 */}
+        {loading ? (
+          <Text variant="muted">불러오는 중…</Text>
+        ) : planets.length === 0 ? (
+          <Text variant="muted">아직 행성이 없습니다. “새 행성 만들기”로 시작해 보세요.</Text>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+            {planets.map((planet) => (
+              <PlanetMapCard key={planet.id} planet={planet} />
+            ))}
+          </div>
+        )}
+      </Container>
+
+      {/* 새 행성 모달 */}
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="새 행성 만들기">
+        <CreatePlanetForm
+          onCreated={() => {
+            setModalOpen(false);
+            load();
+          }}
+        />
+      </Modal>
+    </main>
+  );
+}

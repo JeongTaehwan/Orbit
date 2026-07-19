@@ -22,6 +22,7 @@ def _with_progress(planet: models.Planet, db: Session) -> models.Planet:
         .count()
     )
     progress, is_completed = calculate_progress(record_count, planet.difficulty)
+    planet.record_count = record_count
     planet.progress = progress
     planet.is_completed = is_completed
     return planet

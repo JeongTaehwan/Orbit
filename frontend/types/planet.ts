@@ -9,6 +9,7 @@ export interface Planet {
   id: number;
   name: string;
   difficulty: Difficulty;
+  record_count: number; // 이 행성의 기록 수
   progress: number; // 0 ~ 100
   is_completed: boolean;
   created_at: string; // ISO 문자열

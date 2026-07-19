@@ -14,6 +14,7 @@ def test_create_planet(client):
     assert body["name"] == "파이썬 기초"
     assert body["difficulty"] == "easy"
     assert body["id"] > 0
+    assert body["record_count"] == 0
     assert body["progress"] == 0        # 기록 없으니 0%
     assert body["is_completed"] is False
     assert "created_at" in body          # 서버가 자동으로 채움
@@ -62,6 +63,7 @@ def test_progress_updates_with_records(client):
         client.post(f"/planets/{planet_id}/records", json={"content": f"기록{i}"})
 
     body = client.get(f"/planets/{planet_id}").json()
+    assert body["record_count"] == 2
     assert body["progress"] == 40.0
     assert body["is_completed"] is False
 
