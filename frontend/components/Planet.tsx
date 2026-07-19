@@ -2,6 +2,7 @@
 
 import { useId } from "react";
 import type { Difficulty } from "@/types/planet";
+import { difficultyLabel } from "@/lib/utils/difficulty";
 
 export interface PlanetProps {
   /** 테라포밍 진행도 0~100 */
@@ -95,7 +96,7 @@ export function Planet({
       width={size}
       height={size}
       role="img"
-      aria-label={`테라포밍 ${Math.round(p)}% 행성 (${difficulty})`}
+      aria-label={`테라포밍 ${Math.round(p)}% ${difficultyLabel(difficulty)}`}
       style={{ display: "block", overflow: "visible" }}
     >
       <defs>

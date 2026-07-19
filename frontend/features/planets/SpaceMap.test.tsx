@@ -2,6 +2,7 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { SpaceMap } from "./SpaceMap";
 import { api } from "@/lib/api";
+import { clearPlanetCache } from "@/lib/planetCache";
 import type { Planet } from "@/types/planet";
 
 vi.mock("@/lib/api", () => ({
@@ -52,7 +53,10 @@ const planet = (over: Partial<Planet>): Planet => ({
 });
 
 describe("SpaceMap", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    clearPlanetCache(); // 모듈 전역 캐시가 테스트 간 새지 않게
+  });
 
   it("제목과 새 행성 버튼을 보여준다", async () => {
     mockedApi.listPlanets.mockResolvedValue([]);

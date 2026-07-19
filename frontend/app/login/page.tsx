@@ -20,15 +20,22 @@ export default function LoginPage() {
     <main className="flex flex-1 items-center justify-center py-20">
       <Container size="sm">
         <div className="flex flex-col items-center gap-6 text-center">
-          <Logo size={72} showWordmark wordmarkAs="h1" />
-          <Text variant="muted" className="max-w-xs">
+          <div className="orbit-rise">
+            <Logo size={72} showWordmark wordmarkAs="h1" />
+          </div>
+          <Text
+            variant="muted"
+            className="orbit-rise max-w-xs"
+            style={{ ["--rise-delay" as string]: "0.08s" }}
+          >
             공부하면 내 우주가 자라난다. 구글 계정으로 시작하세요.
           </Text>
 
           {/* OAuth 는 전체 페이지 이동이라 <a> 로 백엔드 /auth/google 로 보낸다 */}
           <a
             href={GOOGLE_LOGIN_URL}
-            className="inline-flex items-center gap-3 rounded-md border border-border bg-surface px-5 py-3 font-medium text-fg transition-colors hover:border-brand"
+            style={{ ["--rise-delay" as string]: "0.16s" }}
+            className="orbit-rise orbit-interactive inline-flex items-center gap-3 rounded-md border border-border bg-surface px-5 py-3 font-medium text-fg hover:border-brand"
           >
             {/* 구글 공식 G 로고 (브랜드 색 그대로 — 서드파티 로고라 토큰 예외) */}
             <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">

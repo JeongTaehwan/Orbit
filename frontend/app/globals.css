@@ -85,6 +85,225 @@ body {
   color: var(--color-fg-body);
 }
 
+/* ── 렌더된 마크다운(학습 기록) 타이포그래피 ──
+   색은 전부 우주 테마 토큰(var(--color-*))을 따른다. MarkdownContent 가 감싸는
+   .orbit-markdown 스코프 안에서만 적용된다. */
+.orbit-markdown {
+  color: var(--color-fg-body);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere; /* URL 등 긴 토큰이 컨테이너를 넘지 않게 */
+}
+.orbit-markdown > :first-child {
+  margin-top: 0;
+}
+.orbit-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+/* 제목 — 강조색은 본문보다 밝은 fg */
+.orbit-markdown h1,
+.orbit-markdown h2,
+.orbit-markdown h3,
+.orbit-markdown h4 {
+  color: var(--color-fg);
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 1.6em 0 0.6em;
+}
+.orbit-markdown h1 {
+  font-size: 1.6rem;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--color-border);
+}
+.orbit-markdown h2 {
+  font-size: 1.3rem;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid var(--color-border);
+}
+.orbit-markdown h3 {
+  font-size: 1.12rem;
+}
+.orbit-markdown h4 {
+  font-size: 1rem;
+}
+
+.orbit-markdown p,
+.orbit-markdown ul,
+.orbit-markdown ol,
+.orbit-markdown blockquote,
+.orbit-markdown pre,
+.orbit-markdown table {
+  margin: 0.75em 0;
+}
+
+.orbit-markdown strong {
+  color: var(--color-fg);
+  font-weight: 600;
+}
+.orbit-markdown em {
+  font-style: italic;
+}
+.orbit-markdown del {
+  color: var(--color-fg-muted);
+}
+
+/* 링크 — 브랜드 시안 */
+.orbit-markdown a {
+  color: var(--color-brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.orbit-markdown a:hover {
+  color: var(--color-brand-hover);
+}
+
+.orbit-markdown ul,
+.orbit-markdown ol {
+  padding-left: 1.5em;
+}
+.orbit-markdown ul {
+  list-style: disc;
+}
+.orbit-markdown ol {
+  list-style: decimal;
+}
+.orbit-markdown li {
+  margin: 0.25em 0;
+}
+.orbit-markdown li::marker {
+  color: var(--color-fg-muted);
+}
+
+/* 인용 — 브랜드 세로선 + 흐린 글자 */
+.orbit-markdown blockquote {
+  border-left: 3px solid var(--color-brand);
+  padding: 0.2em 0 0.2em 1em;
+  color: var(--color-fg-muted);
+  font-style: italic;
+}
+.orbit-markdown blockquote > :first-child {
+  margin-top: 0;
+}
+.orbit-markdown blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.orbit-markdown hr {
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  margin: 1.5em 0;
+}
+
+.orbit-markdown img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+/* 표 */
+.orbit-markdown table {
+  border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+}
+.orbit-markdown th,
+.orbit-markdown td {
+  border: 1px solid var(--color-border);
+  padding: 0.4em 0.7em;
+  text-align: left;
+}
+.orbit-markdown th {
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font-weight: 600;
+}
+
+/* 인라인 코드 */
+.orbit-markdown code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.86em;
+}
+.orbit-markdown :not(pre) > code {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.12em 0.38em;
+  color: var(--color-brand-hover);
+}
+
+/* 코드 블록 */
+.orbit-markdown pre {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.9em 1em;
+  overflow-x: auto;
+}
+.orbit-markdown pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--color-fg);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+/* ── 신택스 하이라이팅(highlight.js) — 우주 다크 테마 ──
+   핵심 색은 테마 토큰과 맞추고(주석=흐림, 문자열=성공, 숫자=경고, 함수/제목=브랜드),
+   키워드/타입엔 팔레트와 어울리는 차가운 보라·하늘색을 더한다. */
+.orbit-markdown .hljs-comment,
+.orbit-markdown .hljs-quote {
+  color: var(--color-fg-muted);
+  font-style: italic;
+}
+.orbit-markdown .hljs-keyword,
+.orbit-markdown .hljs-selector-tag,
+.orbit-markdown .hljs-literal,
+.orbit-markdown .hljs-doctag {
+  color: #b39ddb; /* 차가운 보라 */
+}
+.orbit-markdown .hljs-string,
+.orbit-markdown .hljs-regexp,
+.orbit-markdown .hljs-addition {
+  color: var(--color-success);
+}
+.orbit-markdown .hljs-number,
+.orbit-markdown .hljs-symbol,
+.orbit-markdown .hljs-bullet {
+  color: var(--color-warning);
+}
+.orbit-markdown .hljs-title,
+.orbit-markdown .hljs-title.function_,
+.orbit-markdown .hljs-section,
+.orbit-markdown .hljs-name {
+  color: var(--color-brand);
+}
+.orbit-markdown .hljs-type,
+.orbit-markdown .hljs-built_in,
+.orbit-markdown .hljs-class .hljs-title,
+.orbit-markdown .hljs-attr,
+.orbit-markdown .hljs-attribute,
+.orbit-markdown .hljs-variable,
+.orbit-markdown .hljs-template-variable {
+  color: #7fc4ff; /* 하늘색 */
+}
+.orbit-markdown .hljs-meta,
+.orbit-markdown .hljs-tag {
+  color: var(--color-fg-muted);
+}
+.orbit-markdown .hljs-deletion {
+  color: var(--color-danger);
+}
+.orbit-markdown .hljs-emphasis {
+  font-style: italic;
+}
+.orbit-markdown .hljs-strong {
+  font-weight: 600;
+}
+
 /* ── 행성 자전 애니메이션 ──
    표면/구름 레이어를 뷰박스 중심(50,50) 기준으로 천천히 회전.
    prefers-reduced-motion 시 정지. */
@@ -108,5 +327,283 @@ body {
   .orbit-planet-surface,
   .orbit-planet-clouds {
     animation: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   우주 배경 · 궤도 연출 · 인터랙션 (전부 토큰 참조, transform/opacity 위주)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 우주 배경(별밭) ── */
+.orbit-starfield {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  /* 은은한 심우주 그라데이션으로 평면 배경 탈피 */
+  background:
+    radial-gradient(
+      1200px 820px at 80% -12%,
+      color-mix(in srgb, var(--color-brand) 9%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      1000px 720px at 12% 112%,
+      color-mix(in srgb, var(--color-planet-hard-atmosphere) 7%, transparent),
+      transparent 55%
+    );
+}
+.orbit-star-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 200vh; /* 스크롤 시차용 여유 높이 */
+  will-change: transform;
+}
+.orbit-star {
+  position: absolute;
+  border-radius: var(--radius-full);
+  background: var(--color-fg);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--color-fg) 55%, transparent);
+}
+.orbit-star--tw {
+  animation-name: orbit-twinkle;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+@keyframes orbit-twinkle {
+  0%,
+  100% {
+    opacity: var(--tw-min);
+  }
+  50% {
+    opacity: var(--tw-max);
+  }
+}
+
+/* ── 행성 궤도 링 (상세 화면) ── */
+.orbit-showcase {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.orbit-ring-tilt {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* 중앙 정렬 + 살짝 눌러 기울어진 궤도처럼 */
+  transform: translate(-50%, -50%) scaleY(var(--tilt, 0.5));
+  pointer-events: none;
+}
+.orbit-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  border: 1px solid color-mix(in srgb, var(--color-brand) 22%, transparent);
+  transform-origin: center;
+}
+.orbit-ring--spin {
+  animation: orbit-ring-spin var(--dur, 24s) linear infinite;
+  animation-direction: var(--dir, normal);
+}
+.orbit-ring__sat {
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: var(--radius-full);
+  background: var(--color-brand);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-brand) 80%, transparent);
+}
+@keyframes orbit-ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── 행성 발광(glow) — 진행도로 세기 조절 ── */
+.orbit-planet-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--glow-color, var(--color-brand)) 60%, transparent) 0%,
+    transparent 66%
+  );
+  filter: blur(14px);
+  opacity: var(--glow, 0.25);
+  pointer-events: none;
+}
+.orbit-planet-glow--pulse {
+  animation: orbit-glow-pulse 4s ease-in-out infinite;
+}
+@keyframes orbit-glow-pulse {
+  0%,
+  100% {
+    opacity: var(--glow, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    opacity: calc(var(--glow, 0.5) * 1.35);
+    transform: scale(1.05);
+  }
+}
+
+/* ── 등장 애니메이션 (stagger fade-in) ── */
+.orbit-rise {
+  animation: orbit-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--rise-delay, 0s);
+}
+@keyframes orbit-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── 부드러운 전환 (드로어 모드 전환처럼 튀지 않게 페이드만) ── */
+.orbit-fade {
+  animation: orbit-fade 0.2s ease both;
+}
+@keyframes orbit-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── 우주 지도: 흩어져 떠 있는 행성 ── */
+.orbit-map-planet {
+  transform: translate(-50%, -50%); /* 중심 좌표 기준 정렬 */
+}
+.orbit-map-float {
+  animation: orbit-float var(--float-dur, 6s) ease-in-out var(--float-delay, 0s) infinite;
+  will-change: transform;
+}
+@keyframes orbit-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.orbit-map-body {
+  transition:
+    transform 200ms ease,
+    filter 200ms ease;
+}
+/* 호버·포커스: 확대 + 발광 강화 */
+.orbit-map-planet:hover .orbit-map-body,
+.orbit-map-planet:focus-visible .orbit-map-body {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--color-brand) 60%, transparent));
+}
+.orbit-map-planet:focus-visible .orbit-map-body {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 4px;
+  border-radius: var(--radius-full);
+}
+/* 완성 행성: 평소에도 은은히 발광 */
+.orbit-map-body--done {
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-brand) 45%, transparent));
+}
+.orbit-map-planet:hover .orbit-map-body--done,
+.orbit-map-planet:focus-visible .orbit-map-body--done {
+  filter: drop-shadow(0 0 16px color-mix(in srgb, var(--color-brand) 75%, transparent));
+}
+/* 상세 라벨: 평소 숨김 → 호버·포커스 시 표시 */
+.orbit-map-detail {
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.orbit-map-planet:hover .orbit-map-detail,
+.orbit-map-planet:focus-visible .orbit-map-detail {
+  opacity: 1;
+}
+
+/* ── 확대 전환 (View Transitions) — 짧고 경쾌하게 ── */
+::view-transition-group(*) {
+  animation-duration: 260ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── 인터랙션: 호버 시 살짝 뜨고 빛남, 누르면 눌리는 느낌 ── */
+.orbit-interactive {
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+}
+.orbit-interactive:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-brand) 40%, transparent),
+    0 10px 26px color-mix(in srgb, var(--color-brand) 18%, transparent);
+}
+.orbit-interactive:active {
+  transform: translateY(-1px) scale(0.98);
+}
+/* 카드 안 행성: 호버 시 발광 강화 */
+.orbit-planet-mini {
+  transition: filter 200ms ease;
+}
+.orbit-interactive:hover .orbit-planet-mini {
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-brand) 60%, transparent));
+}
+/* 완성 행성: 평소에도 은은히 빛남 */
+.orbit-glow-soft {
+  box-shadow: 0 0 18px color-mix(in srgb, var(--color-brand) 20%, transparent);
+}
+.orbit-glow-soft .orbit-planet-mini {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-brand) 45%, transparent));
+}
+
+/* ── 모션 최소화: 우주 배경·궤도·발광·등장 모두 정지 ── */
+@media (prefers-reduced-motion: reduce) {
+  .orbit-star--tw,
+  .orbit-ring--spin,
+  .orbit-planet-glow--pulse {
+    animation: none !important;
+  }
+  .orbit-rise,
+  .orbit-fade,
+  .orbit-map-float {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+  .orbit-interactive {
+    transition: box-shadow 160ms ease, border-color 160ms ease;
+  }
+  .orbit-interactive:hover,
+  .orbit-interactive:active {
+    transform: none;
+  }
+  /* 지도 행성: 확대 모션은 끄되 발광 피드백은 유지 */
+  .orbit-map-body {
+    transition: filter 200ms ease;
+  }
+  .orbit-map-planet:hover .orbit-map-body,
+  .orbit-map-planet:focus-visible .orbit-map-body {
+    transform: none;
+  }
+  /* View Transition 애니메이션 정지 (전환 없이 즉시 이동) */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
