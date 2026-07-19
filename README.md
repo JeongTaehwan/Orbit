@@ -45,7 +45,17 @@ Orbit/
 
 ## 🚀 실행 방법
 
-### Frontend
+### 동시 실행 (권장)
+최초 1회 아래 "개별 설치"로 의존성을 설치한 뒤, **루트에서 명령 하나로** 둘 다 실행:
+```bash
+./scripts/dev.sh
+# 백엔드 :8000 (API 문서 /docs) + 프론트 :3000 을 함께 실행
+# 로그는 [backend] / [frontend] 접두사로 구분, Ctrl+C 한 번으로 둘 다 종료
+```
+
+### 개별 설치 / 실행
+
+**Frontend**
 ```bash
 cd frontend
 npm install
@@ -53,7 +63,7 @@ npm run dev
 # http://localhost:3000
 ```
 
-### Backend
+**Backend**
 ```bash
 cd backend
 python3 -m venv venv
@@ -64,13 +74,20 @@ fastapi dev app/main.py
 # API 문서: http://localhost:8000/docs
 ```
 
+### 테스트
+```bash
+./scripts/test-all.sh          # 백엔드 + 프론트 유닛 + e2e 한 번에
+# 부분 실행: ./scripts/test-all.sh backend | unit | e2e
+```
+
 <br />
 
 ## 🌱 진행 상황
 
 - [x] 모노레포 초기 세팅 (Next.js + FastAPI)
-- [ ] 데이터 모델 설계 (행성 / 학습 기록)
-- [ ] 행성 CRUD API
+- [x] 데이터 모델 설계 (행성 / 학습 기록)
+- [x] 행성 CRUD API
+- [x] 디자인 시스템 적용 (`@usetaehwan/ui`) + 우주 테마
 - [ ] 구글 OAuth 로그인
 - [ ] 행성 SVG 비주얼 (진행도별 단계 변화)
 - [ ] 우주 지도 화면
