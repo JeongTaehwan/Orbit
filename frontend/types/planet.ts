@@ -15,10 +15,19 @@ export interface Planet {
   created_at: string; // ISO 문자열
 }
 
-// TS 내장 유틸 타입 Record<K,V> 와 겹치지 않도록 LearningRecord 로 명명
+// TS 내장 유틸 타입 Record<K,V> 와 겹치지 않도록 LearningRecord 로 명명.
+// 상세 조회용 — content 는 마크다운 원본.
 export interface LearningRecord {
   id: number;
   planet_id: number;
   content: string;
+  created_at: string;
+}
+
+// 목록용 축약본 — 전문(content) 대신 마크다운 제거한 preview 만.
+export interface RecordSummary {
+  id: number;
+  planet_id: number;
+  preview: string;
   created_at: string;
 }

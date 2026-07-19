@@ -9,10 +9,18 @@ export interface DrawerProps {
   open: boolean;
   onClose: () => void;
   title?: string;
+  /** 우측 패널 폭 (Tailwind width 클래스). 변경 시 부드럽게 전환된다. */
+  widthClass?: string;
   children: React.ReactNode;
 }
 
-export function Drawer({ open, onClose, title, children }: DrawerProps) {
+export function Drawer({
+  open,
+  onClose,
+  title,
+  widthClass = "w-full max-w-sm",
+  children,
+}: DrawerProps) {
   // 드로어는 닫혀 있어도 슬라이드 전환 위해 항상 렌더한다.
   // SSR 에선 포털을 만들지 않고, 마운트 후에만 렌더 → 하이드레이션 불일치 방지.
   const [mounted, setMounted] = useState(false);
@@ -44,7 +52,7 @@ export function Drawer({ open, onClose, title, children }: DrawerProps) {
       />
       {/* 패널 */}
       <div
-        className={`absolute right-0 top-0 flex h-full w-full max-w-sm flex-col border-l border-border bg-surface shadow-lg transition-transform duration-200 ${
+        className={`absolute right-0 top-0 flex h-full ${widthClass} flex-col border-l border-border bg-surface shadow-lg transition-[transform,max-width] duration-300 ease-out motion-reduce:transition-none ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
         role="dialog"

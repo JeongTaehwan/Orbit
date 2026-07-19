@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/Logo";
+import { TransitionLink } from "@/components/TransitionLink";
 import { useAuth } from "@/features/auth";
 import { api } from "@/lib/api";
 
@@ -37,9 +37,9 @@ export function Header({
     <header
       className={`flex flex-wrap items-center justify-between gap-4 ${className ?? ""}`}
     >
-      <Link href="/" aria-label="Orbit 홈" className="inline-flex items-center rounded">
+      <TransitionLink href="/" aria-label="Orbit 홈" className="inline-flex items-center rounded">
         <Logo showWordmark wordmarkAs={titleAs} size={size} />
-      </Link>
+      </TransitionLink>
 
       <div className="flex flex-wrap items-center gap-3">
         {children}

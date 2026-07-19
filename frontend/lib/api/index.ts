@@ -5,10 +5,10 @@
  * 모든 요청에 credentials:"include" → httpOnly 세션 쿠키가 함께 전송된다.
  */
 
-import type { Difficulty, LearningRecord, Planet } from "@/types/planet";
+import type { Difficulty, LearningRecord, Planet, RecordSummary } from "@/types/planet";
 import type { User } from "@/types/user";
 
-export type { Difficulty, LearningRecord, Planet } from "@/types/planet";
+export type { Difficulty, LearningRecord, Planet, RecordSummary } from "@/types/planet";
 export type { User } from "@/types/user";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -68,6 +68,11 @@ export const api = {
       headers: JSON_HEADERS,
       body: JSON.stringify({ content }),
     }),
+  // 목록: 축약본(preview)만 — 전문은 상세에서 따로 조회
   listRecords: (planetId: number) =>
-    req<LearningRecord[]>(`/planets/${planetId}/records`),
+    req<RecordSummary[]>(`/planets/${planetId}/records`),
+  getRecord: (planetId: number, recordId: number) =>
+    req<LearningRecord>(`/planets/${planetId}/records/${recordId}`),
+  deleteRecord: (planetId: number, recordId: number) =>
+    req<void>(`/planets/${planetId}/records/${recordId}`, { method: "DELETE" }),
 };
