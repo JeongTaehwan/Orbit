@@ -7,12 +7,14 @@ import { Header } from "@/components/Header";
 import { Planet } from "@/components/Planet";
 import { Drawer } from "@/components/ui/Drawer";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { useRequireAuth } from "@/features/auth";
 import { api } from "@/lib/api";
 import type { LearningRecord, Planet as PlanetType } from "@/types/planet";
 import { useAnimatedNumber } from "@/lib/hooks/useAnimatedNumber";
 import { stageName } from "@/lib/utils/progress";
 
 export function PlanetDetail({ planetId }: { planetId: number }) {
+  const { user, loading: authLoading } = useRequireAuth();
   const router = useRouter();
   const [planet, setPlanet] = useState<PlanetType | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,9 +43,9 @@ export function PlanetDetail({ planetId }: { planetId: number }) {
   }
 
   useEffect(() => {
-    loadPlanet();
+    if (user) loadPlanet();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [planetId]);
+  }, [planetId, user]);
 
   async function handleAddRecord(e: React.FormEvent) {
     e.preventDefault();
@@ -96,7 +98,7 @@ export function PlanetDetail({ planetId }: { planetId: number }) {
         {/* 헤더 (로고 클릭 → 우주 지도) */}
         <Header className="mb-8" />
 
-        {loading ? (
+        {authLoading || loading ? (
           <Text variant="muted">불러오는 중…</Text>
         ) : error && !planet ? (
           <Text as="p" variant="body" className="text-danger">
