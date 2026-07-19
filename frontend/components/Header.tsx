@@ -1,7 +1,12 @@
-import Link from "next/link";
-import { Logo } from "@/components/Logo";
+"use client";
 
-// 화면 상단 헤더: 왼쪽 로고(클릭 시 우주 지도로), 오른쪽 액션 슬롯.
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Logo } from "@/components/Logo";
+import { useAuth } from "@/features/auth";
+import { api } from "@/lib/api";
+
+// 화면 상단 헤더: 왼쪽 로고(→ 우주 지도), 오른쪽 페이지 액션 + 사용자/로그아웃.
 export function Header({
   titleAs = "span",
   size = 28,
@@ -15,12 +20,51 @@ export function Header({
   className?: string;
   children?: React.ReactNode;
 }) {
+  const { user, refresh } = useAuth();
+  const router = useRouter();
+
+  async function handleLogout() {
+    try {
+      await api.logout();
+    } catch {
+      // 로그아웃 실패해도 로컬 상태는 비운다
+    }
+    await refresh();
+    router.replace("/login");
+  }
+
   return (
-    <header className={`flex flex-wrap items-center justify-between gap-4 ${className ?? ""}`}>
+    <header
+      className={`flex flex-wrap items-center justify-between gap-4 ${className ?? ""}`}
+    >
       <Link href="/" aria-label="Orbit 홈" className="inline-flex items-center rounded">
         <Logo showWordmark wordmarkAs={titleAs} size={size} />
       </Link>
-      {children}
+
+      <div className="flex flex-wrap items-center gap-3">
+        {children}
+        {user && (
+          <div className="flex items-center gap-2">
+            {user.picture && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={user.picture}
+                alt=""
+                width={28}
+                height={28}
+                className="rounded-full border border-border"
+              />
+            )}
+            <span className="text-sm text-fg-body">{user.name ?? user.email}</span>
+            <button
+              onClick={handleLogout}
+              className="text-sm text-fg-muted hover:text-fg"
+            >
+              로그아웃
+            </button>
+          </div>
+        )}
+      </div>
     </header>
   );
 }

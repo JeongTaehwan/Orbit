@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button, Container, Text } from "@usetaehwan/ui";
 import { Header } from "@/components/Header";
 import { Modal } from "@/components/ui/Modal";
+import { useRequireAuth } from "@/features/auth";
 import { api } from "@/lib/api";
 import type { Planet } from "@/types/planet";
 import { CreatePlanetForm } from "./CreatePlanetForm";
@@ -21,6 +22,7 @@ function Stat({ label, value }: { label: string; value: number }) {
 
 // 우주 지도: 내 행성들을 모아 보는 메인 화면.
 export function SpaceMap() {
+  const { user, loading: authLoading } = useRequireAuth();
   const [planets, setPlanets] = useState<Planet[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,9 +40,22 @@ export function SpaceMap() {
     }
   }
 
+  // 로그인 확인된 뒤에만 내 행성을 불러온다.
   useEffect(() => {
-    load();
-  }, []);
+    if (user) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  // 인증 확인 전/미로그인(리다이렉트 중)에는 지도를 그리지 않는다.
+  if (authLoading || !user) {
+    return (
+      <main className="py-10">
+        <Container size="lg">
+          <Text variant="muted">불러오는 중…</Text>
+        </Container>
+      </main>
+    );
+  }
 
   const totalRecords = planets.reduce((sum, p) => sum + p.record_count, 0);
   const completed = planets.filter((p) => p.is_completed).length;

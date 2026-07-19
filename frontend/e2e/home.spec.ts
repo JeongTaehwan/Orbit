@@ -1,15 +1,14 @@
 import { test, expect } from "@playwright/test";
 
-// e2e: 우주 지도(메인) 화면. 백엔드가 없어도 아래 요소는 렌더됨.
+// e2e: 인증. 백엔드가 없으면 /auth/me 호출이 실패 → 미로그인으로 간주.
 
-test("우주 지도가 열리고 제목 Orbit 이 보인다", async ({ page }) => {
+test("미로그인 시 /login 으로 이동하고 구글 로그인 버튼이 보인다", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Orbit" })).toBeVisible();
+  await page.waitForURL("**/login");
+  await expect(page.getByRole("link", { name: /구글로 로그인/ })).toBeVisible();
 });
 
-test("새 행성 만들기 버튼을 누르면 모달이 열린다", async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("button", { name: "새 행성 만들기" }).click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await expect(page.getByPlaceholder("학습 주제 이름")).toBeVisible();
+test("로그인 화면에 Orbit 로고가 보인다", async ({ page }) => {
+  await page.goto("/login");
+  await expect(page.getByRole("heading", { name: "Orbit" })).toBeVisible();
 });

@@ -2,20 +2,20 @@
  * FastAPI 백엔드 호출 클라이언트.
  *
  * 화면은 fetch를 직접 쓰지 않고 이 api 객체만 호출한다.
- * 엔드포인트/에러처리가 한 곳에 모여 유지보수가 쉬움.
+ * 모든 요청에 credentials:"include" → httpOnly 세션 쿠키가 함께 전송된다.
  */
 
 import type { Difficulty, LearningRecord, Planet } from "@/types/planet";
+import type { User } from "@/types/user";
 
-// 도메인 타입을 이 모듈에서도 그대로 쓸 수 있게 재노출
 export type { Difficulty, LearningRecord, Planet } from "@/types/planet";
+export type { User } from "@/types/user";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-/**
- * fetch 응답 공통 처리: 실패면 에러를 던지고, 성공이면 JSON 반환.
- * 204(No Content)는 본문이 없으므로 undefined.
- */
+/** 구글 로그인 시작 URL (전체 페이지 이동으로 사용) */
+export const GOOGLE_LOGIN_URL = `${BASE_URL}/auth/google`;
+
 async function handle<T>(res: Response): Promise<T> {
   if (!res.ok) {
     let detail = res.statusText;
@@ -33,33 +33,41 @@ async function handle<T>(res: Response): Promise<T> {
 
 const JSON_HEADERS = { "Content-Type": "application/json" };
 
+/** 공통 요청 헬퍼 — 항상 세션 쿠키 포함 */
+function req<T>(path: string, init?: RequestInit): Promise<T> {
+  return fetch(`${BASE_URL}${path}`, { credentials: "include", ...init }).then((r) =>
+    handle<T>(r),
+  );
+}
+
 export const api = {
-  listPlanets: () => fetch(`${BASE_URL}/planets`).then((r) => handle<Planet[]>(r)),
+  // ── 인증 ──
+  me: async (): Promise<User | null> => {
+    // 미로그인(401)은 에러가 아니라 "사용자 없음"으로 처리
+    const res = await fetch(`${BASE_URL}/auth/me`, { credentials: "include" });
+    if (res.status === 401) return null;
+    return handle<User>(res);
+  },
+  logout: () => req<{ ok: boolean }>("/auth/logout", { method: "POST" }),
 
-  getPlanet: (id: number) =>
-    fetch(`${BASE_URL}/planets/${id}`).then((r) => handle<Planet>(r)),
-
+  // ── 행성 ──
+  listPlanets: () => req<Planet[]>("/planets"),
+  getPlanet: (id: number) => req<Planet>(`/planets/${id}`),
   createPlanet: (data: { name: string; difficulty: Difficulty }) =>
-    fetch(`${BASE_URL}/planets`, {
+    req<Planet>("/planets", {
       method: "POST",
       headers: JSON_HEADERS,
       body: JSON.stringify(data),
-    }).then((r) => handle<Planet>(r)),
+    }),
+  deletePlanet: (id: number) => req<void>(`/planets/${id}`, { method: "DELETE" }),
 
-  deletePlanet: (id: number) =>
-    fetch(`${BASE_URL}/planets/${id}`, { method: "DELETE" }).then((r) =>
-      handle<void>(r),
-    ),
-
+  // ── 기록 ──
   addRecord: (planetId: number, content: string) =>
-    fetch(`${BASE_URL}/planets/${planetId}/records`, {
+    req<LearningRecord>(`/planets/${planetId}/records`, {
       method: "POST",
       headers: JSON_HEADERS,
       body: JSON.stringify({ content }),
-    }).then((r) => handle<LearningRecord>(r)),
-
+    }),
   listRecords: (planetId: number) =>
-    fetch(`${BASE_URL}/planets/${planetId}/records`).then((r) =>
-      handle<LearningRecord[]>(r),
-    ),
+    req<LearningRecord[]>(`/planets/${planetId}/records`),
 };

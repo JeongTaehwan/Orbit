@@ -7,7 +7,8 @@ pydantic==2.13.4          # 스키마 검증 (schemas.py)
 sqlalchemy==2.0.51        # ORM (models.py, database.py)
 psycopg2-binary==2.9.12   # PostgreSQL 드라이버 (SQLAlchemy가 내부에서 사용)
 python-dotenv==1.2.2      # .env 파일 로딩
+pyjwt==2.13.0             # 세션 JWT 서명/검증
+httpx==0.28.1             # 구글 OAuth 서버-사이드 호출 (TestClient도 사용)
 
 # --- 테스트용 (개발 환경에서만 필요) ---
 pytest==9.1.1             # 테스트 러너
-httpx==0.28.1             # TestClient가 내부에서 API 호출에 사용

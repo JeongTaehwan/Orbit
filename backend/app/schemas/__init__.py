@@ -7,6 +7,7 @@ from app.schemas.planet import (
     PlanetResponse,
 )
 from app.schemas.record import RecordCreate, RecordResponse
+from app.schemas.user import UserResponse
 
 __all__ = [
     "Difficulty",
@@ -15,4 +16,5 @@ __all__ = [
     "PlanetResponse",
     "RecordCreate",
     "RecordResponse",
+    "UserResponse",
 ]
