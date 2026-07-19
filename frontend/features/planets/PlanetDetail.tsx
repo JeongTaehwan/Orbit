@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Badge, Button, Container, Heading, Input, Text } from "@usetaehwan/ui";
+import { Header } from "@/components/Header";
 import { Planet } from "@/components/Planet";
 import { Drawer } from "@/components/ui/Drawer";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -93,17 +93,8 @@ export function PlanetDetail({ planetId }: { planetId: number }) {
   return (
     <main className="py-8">
       <Container size="sm">
-        {/* 상단 바 */}
-        <div className="mb-6 flex items-center justify-between">
-          <Link href="/" className="text-sm text-fg-muted hover:text-fg">
-            ← 우주 지도
-          </Link>
-          {planet && (
-            <button onClick={handleDelete} className="text-sm text-danger hover:underline">
-              행성 삭제
-            </button>
-          )}
-        </div>
+        {/* 헤더 (로고 클릭 → 우주 지도) */}
+        <Header className="mb-8" />
 
         {loading ? (
           <Text variant="muted">불러오는 중…</Text>
@@ -164,6 +155,14 @@ export function PlanetDetail({ planetId }: { planetId: number }) {
               className="mt-4 text-sm text-fg-muted hover:text-fg"
             >
               학습 기록 {planet.record_count}개 보기
+            </button>
+
+            {/* 위험 액션은 눈에 띄지 않게 맨 아래로 */}
+            <button
+              onClick={handleDelete}
+              className="mt-12 text-xs text-fg-muted hover:text-danger"
+            >
+              이 행성 삭제
             </button>
           </div>
         ) : null}

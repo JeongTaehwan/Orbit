@@ -2,7 +2,7 @@
 
 // 우측 슬라이드 드로어 (패키지에 없어서 프로젝트에서 제작). 토큰 색만 사용.
 // 기록 목록처럼 "평소엔 숨기고 열어서 보는" 용도.
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 export interface DrawerProps {
@@ -13,6 +13,11 @@ export interface DrawerProps {
 }
 
 export function Drawer({ open, onClose, title, children }: DrawerProps) {
+  // 드로어는 닫혀 있어도 슬라이드 전환 위해 항상 렌더한다.
+  // SSR 에선 포털을 만들지 않고, 마운트 후에만 렌더 → 하이드레이션 불일치 방지.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -26,7 +31,7 @@ export function Drawer({ open, onClose, title, children }: DrawerProps) {
     };
   }, [open, onClose]);
 
-  if (typeof document === "undefined") return null;
+  if (!mounted) return null;
 
   return createPortal(
     <div className={`fixed inset-0 z-50 ${open ? "" : "pointer-events-none"}`} aria-hidden={!open}>
