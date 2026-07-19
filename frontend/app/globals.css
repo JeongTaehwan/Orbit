@@ -34,9 +34,79 @@
 /* Orbit 은 다크가 기본 — 네이티브 폼 컨트롤·스크롤바도 다크로 렌더 */
 :root {
   color-scheme: dark;
+
+  /* ── 행성(테라포밍) 팔레트 ──
+     Planet.tsx 가 var() 로 참조. 색은 여기(토큰)에만 두고 컴포넌트에선 하드코딩 금지. */
+
+  /* 난이도별 암석 (base / 밝은면 / 그림자면) */
+  --color-planet-easy-base: #9a6b45; /* 따뜻한 갈색 */
+  --color-planet-easy-light: #c59062;
+  --color-planet-easy-dark: #4a3121;
+
+  --color-planet-normal-base: #7c8493; /* 회색 */
+  --color-planet-normal-light: #a9b0bd;
+  --color-planet-normal-dark: #3c424d;
+
+  --color-planet-hard-base: #4f7396; /* 푸른빛 차가운 */
+  --color-planet-hard-light: #82a6c6;
+  --color-planet-hard-dark: #26384a;
+
+  /* 테라포밍 레이어 (공통) */
+  --color-planet-crater: #00000055; /* 크레이터 음영 (반투명) */
+  --color-planet-cloud: #eef4ff;
+  --color-planet-highlight: #f5f9ff; /* 스페큘러 하이라이트 */
+
+  /* 난이도별 바다·식생·대기 — 100%에서도 한눈에 구분되게 색을 벌림 */
+
+  /* easy: 따뜻하고 밝은 톤 (청록 바다 + 황록 식생 + 밝은 민트 대기) */
+  --color-planet-easy-ocean: #1fa9ad;
+  --color-planet-easy-ocean-deep: #147a80;
+  --color-planet-easy-veg: #97cc3c;
+  --color-planet-easy-veg-deep: #629c27;
+  --color-planet-easy-atmosphere: #8fe8d2;
+
+  /* normal: 표준 지구형 (파란 바다 + 초록 식생 + 하늘색 대기) */
+  --color-planet-normal-ocean: #2f6fb0;
+  --color-planet-normal-ocean-deep: #1c4a7c;
+  --color-planet-normal-veg: #4a9d5f;
+  --color-planet-normal-veg-deep: #2f7a44;
+  --color-planet-normal-atmosphere: #7fc4ff;
+
+  /* hard: 차갑고 어두운 톤 (짙은 남색 바다 + 청록/암녹 식생 + 서늘한 대기) */
+  --color-planet-hard-ocean: #21406f;
+  --color-planet-hard-ocean-deep: #142748;
+  --color-planet-hard-veg: #37806c;
+  --color-planet-hard-veg-deep: #234f43;
+  --color-planet-hard-atmosphere: #6f93cf;
 }
 
 body {
   background: var(--color-bg);
   color: var(--color-fg-body);
+}
+
+/* ── 행성 자전 애니메이션 ──
+   표면/구름 레이어를 뷰박스 중심(50,50) 기준으로 천천히 회전.
+   prefers-reduced-motion 시 정지. */
+@keyframes orbit-planet-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.orbit-planet-surface,
+.orbit-planet-clouds {
+  transform-box: view-box;
+  transform-origin: center;
+}
+.orbit-planet-surface {
+  animation: orbit-planet-spin 60s linear infinite;
+}
+.orbit-planet-clouds {
+  animation: orbit-planet-spin 90s linear infinite; /* 살짝 다른 속도로 시차감 */
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbit-planet-surface,
+  .orbit-planet-clouds {
+    animation: none;
+  }
 }
