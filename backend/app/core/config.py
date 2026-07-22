@@ -27,6 +27,11 @@ GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 # ── 세션 JWT 서명 키 (.env 에 직접 넣을 것) ──
 JWT_SECRET = os.getenv("JWT_SECRET")
 
+# ── Cloudinary (이미지 저장소) — 대시보드의 Product Environment Credentials ──
+CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME")
+CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY")
+CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET")
+
 # ── 로컬 개발용 고정값 (비밀 아님) ──
 # 구글 콘솔의 "승인된 리디렉션 URI" 에 이 값을 등록해야 한다.
 GOOGLE_REDIRECT_URI = os.getenv(

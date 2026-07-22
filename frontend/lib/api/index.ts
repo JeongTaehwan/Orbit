@@ -75,4 +75,13 @@ export const api = {
     req<LearningRecord>(`/planets/${planetId}/records/${recordId}`),
   deleteRecord: (planetId: number, recordId: number) =>
     req<void>(`/planets/${planetId}/records/${recordId}`, { method: "DELETE" }),
+
+  // ── 이미지 업로드 ──
+  // FormData 를 body 로 주면 브라우저가 Content-Type 을 boundary 와 함께 자동으로 붙인다.
+  // (직접 "multipart/form-data" 를 지정하면 boundary 가 빠져 서버가 파싱하지 못한다)
+  uploadImage: (file: File) => {
+    const form = new FormData();
+    form.append("file", file); // 필드명 "file" = 백엔드 UploadFile 파라미터 이름
+    return req<{ url: string }>("/uploads/image", { method: "POST", body: form });
+  },
 };

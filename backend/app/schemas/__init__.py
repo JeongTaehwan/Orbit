@@ -7,11 +7,13 @@ from app.schemas.planet import (
     PlanetResponse,
 )
 from app.schemas.record import RecordCreate, RecordResponse, RecordSummary
+from app.schemas.upload import ImageUploadResponse
 from app.schemas.user import UserResponse
 
 __all__ = [
     "Difficulty",
     "REQUIRED_RECORDS",
+    "ImageUploadResponse",
     "PlanetCreate",
     "PlanetResponse",
     "RecordCreate",
