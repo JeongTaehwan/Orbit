@@ -19,6 +19,18 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
+// 궤도 지도는 WebGL 장면이라 jsdom 에서 못 뜬다 → 어떤 행성을 넘겨받았는지만 드러내는
+// 가짜로 바꾼다. (실제 3D 렌더는 e2e 가 브라우저에서 확인)
+vi.mock("./OrbitScene", () => ({
+  default: ({ planets, animate }: { planets: Planet[]; animate: boolean }) => (
+    <div data-testid="orbit-scene" data-animate={String(animate)}>
+      {planets.map((p) => (
+        <span key={p.id}>{p.name}</span>
+      ))}
+    </div>
+  ),
+}));
+
 // 인증은 로그인된 사용자로 고정 (auth 컨텍스트/라우터는 테스트 대상 아님)
 const fakeUser = {
   id: 1,

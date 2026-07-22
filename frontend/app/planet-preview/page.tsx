@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Badge, Container, Heading, Text } from "@usetaehwan/ui";
 import { Planet } from "@/components/Planet";
+import { Planet3D } from "@/components/Planet3D";
 import type { Difficulty } from "@/types/planet";
 
 const DIFFICULTIES: Difficulty[] = ["easy", "normal", "hard"];
@@ -19,6 +20,7 @@ function stageName(p: number): string {
 export default function PlanetPreviewPage() {
   const [progress, setProgress] = useState(50);
   const [animate, setAnimate] = useState(true);
+  const [showSvg, setShowSvg] = useState(false);
 
   return (
     <main className="py-10">
@@ -27,7 +29,7 @@ export default function PlanetPreviewPage() {
           행성 프리뷰
         </Heading>
         <Text variant="muted" className="mb-6">
-          슬라이더로 진행도를 조절하면 세 난이도의 행성이 실시간으로 변합니다. (개발 확인용)
+          슬라이더로 진행도를 조절하면 세 난이도의 3D 행성이 실시간으로 변합니다. (개발 확인용)
         </Text>
 
         {/* 컨트롤 */}
@@ -57,6 +59,17 @@ export default function PlanetPreviewPage() {
               자전 애니메이션
             </Text>
           </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={showSvg}
+              onChange={(e) => setShowSvg(e.target.checked)}
+              className="accent-brand"
+            />
+            <Text as="span" variant="small">
+              기존 SVG 버전 나란히 보기
+            </Text>
+          </label>
           <Badge variant="brand">현재 단계: {stageName(progress)}</Badge>
         </div>
 
@@ -67,10 +80,18 @@ export default function PlanetPreviewPage() {
               key={d}
               className="flex flex-col items-center gap-3 rounded-lg border border-border bg-surface p-6"
             >
-              <Planet progress={progress} difficulty={d} size={180} animate={animate} />
+              <Planet3D progress={progress} difficulty={d} size={180} animate={animate} />
               <Text as="span" variant="small" className="text-fg">
                 {d}
               </Text>
+              {showSvg && (
+                <>
+                  <Planet progress={progress} difficulty={d} size={180} animate={animate} />
+                  <Text as="span" variant="small" className="text-fg-muted">
+                    SVG (기존)
+                  </Text>
+                </>
+              )}
             </div>
           ))}
         </div>
