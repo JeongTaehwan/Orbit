@@ -6,9 +6,11 @@
  */
 
 import type { Difficulty, LearningRecord, Planet, RecordSummary } from "@/types/planet";
+import type { Streak } from "@/types/streak";
 import type { User } from "@/types/user";
 
 export type { Difficulty, LearningRecord, Planet, RecordSummary } from "@/types/planet";
+export type { Streak } from "@/types/streak";
 export type { User } from "@/types/user";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -60,6 +62,10 @@ export const api = {
       body: JSON.stringify(data),
     }),
   deletePlanet: (id: number) => req<void>(`/planets/${id}`, { method: "DELETE" }),
+
+  // ── 스트릭 ──
+  // 저장된 값이 아니라 서버가 기록 날짜로 계산해 준다 (기록 추가/삭제 후 다시 부르면 최신값)
+  getStreak: () => req<Streak>("/me/streak"),
 
   // ── 기록 ──
   addRecord: (planetId: number, content: string) =>

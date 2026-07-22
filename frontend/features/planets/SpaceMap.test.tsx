@@ -15,6 +15,7 @@ vi.mock("@/lib/api", () => ({
     getPlanet: vi.fn(),
     addRecord: vi.fn(),
     listRecords: vi.fn(),
+    getStreak: vi.fn(),
   },
 }));
 
@@ -56,6 +57,11 @@ describe("SpaceMap", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     clearPlanetCache(); // 모듈 전역 캐시가 테스트 간 새지 않게
+    mockedApi.getStreak.mockResolvedValue({
+      current_streak: 0,
+      longest_streak: 0,
+      today_logged: false,
+    });
   });
 
   it("제목과 새 행성 버튼을 보여준다", async () => {
@@ -80,5 +86,28 @@ describe("SpaceMap", () => {
     mockedApi.listPlanets.mockResolvedValue([]);
     render(<SpaceMap />);
     expect(await screen.findByText(/아직 행성이 없습니다/)).toBeInTheDocument();
+  });
+
+  it("통계 영역에 스트릭을 함께 보여준다", async () => {
+    mockedApi.listPlanets.mockResolvedValue([]);
+    mockedApi.getStreak.mockResolvedValue({
+      current_streak: 5,
+      longest_streak: 12,
+      today_logged: true,
+    });
+    render(<SpaceMap />);
+
+    expect(await screen.findByText("연속 학습(일)")).toBeInTheDocument();
+    expect(screen.getByText("5")).toBeInTheDocument();
+    expect(screen.getByText("최장 12일")).toBeInTheDocument();
+  });
+
+  it("스트릭 조회가 실패해도 지도는 정상 렌더된다", async () => {
+    mockedApi.listPlanets.mockResolvedValue([planet({ id: 1, name: "파이썬 기초" })]);
+    mockedApi.getStreak.mockRejectedValue(new Error("500"));
+    render(<SpaceMap />);
+
+    expect(await screen.findByText("파이썬 기초")).toBeInTheDocument();
+    expect(screen.queryByText("연속 학습(일)")).not.toBeInTheDocument();
   });
 });
