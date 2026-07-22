@@ -7,6 +7,7 @@ from app.schemas.planet import (
     PlanetResponse,
 )
 from app.schemas.record import RecordCreate, RecordResponse, RecordSummary
+from app.schemas.streak import StreakResponse
 from app.schemas.upload import ImageUploadResponse
 from app.schemas.user import UserResponse
 
@@ -19,5 +20,6 @@ __all__ = [
     "RecordCreate",
     "RecordResponse",
     "RecordSummary",
+    "StreakResponse",
     "UserResponse",
 ]

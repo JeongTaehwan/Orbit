@@ -8,7 +8,9 @@ import { useRequireAuth } from "@/features/auth";
 import { api } from "@/lib/api";
 import { cachePlanets, getCachedPlanets } from "@/lib/planetCache";
 import { computeMapLayout } from "@/lib/utils/mapLayout";
+import { StreakCard } from "@/features/streak/StreakCard";
 import type { Planet } from "@/types/planet";
+import type { Streak } from "@/types/streak";
 import { CreatePlanetForm } from "./CreatePlanetForm";
 import { MapPlanet } from "./MapPlanet";
 
@@ -33,6 +35,7 @@ export function SpaceMap() {
   const [loading, setLoading] = useState(() => getCachedPlanets().length === 0);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [streak, setStreak] = useState<Streak | null>(null);
 
   // 배치 영역 폭 측정 (반응형 scatter)
   const areaRef = useRef<HTMLDivElement>(null);
@@ -42,8 +45,13 @@ export function SpaceMap() {
     if (showLoading) setLoading(true);
     setError(null);
     try {
-      const list = await api.listPlanets();
+      // 스트릭은 곁들이는 정보라 실패해도 지도는 그대로 보여준다 (null → 타일만 생략)
+      const [list, s] = await Promise.all([
+        api.listPlanets(),
+        api.getStreak().catch(() => null),
+      ]);
       setPlanets(list);
+      setStreak(s);
       cachePlanets(list);
     } catch (e) {
       setError(e instanceof Error ? e.message : "불러오기 실패");
@@ -104,10 +112,11 @@ export function SpaceMap() {
         </div>
 
         {/* 통계 */}
-        <div className="mb-8 flex gap-3">
-          <Stat label="행성" value={planets.length} delay={0} />
-          <Stat label="총 기록" value={totalRecords} delay={0.05} />
-          <Stat label="완성" value={completed} delay={0.1} />
+        <div className="mb-8 flex flex-wrap gap-3">
+          {streak && <StreakCard streak={streak} delay={0} />}
+          <Stat label="행성" value={planets.length} delay={0.05} />
+          <Stat label="총 기록" value={totalRecords} delay={0.1} />
+          <Stat label="완성" value={completed} delay={0.15} />
         </div>
 
         {error && (
