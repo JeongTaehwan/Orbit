@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import models  # noqa: F401  (import 해야 테이블이 Base에 등록됨)
-from app.api import auth, planets, records
+from app.api import auth, planets, records, uploads
 from app.core.database import Base, engine
 
 
@@ -30,6 +30,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(planets.router)
 app.include_router(records.router)
+app.include_router(uploads.router)
 
 
 @app.get("/")

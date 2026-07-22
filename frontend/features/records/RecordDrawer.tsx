@@ -139,7 +139,7 @@ export function RecordDrawer({ planetId, open, onClose, initialMode = "list", on
             </Button>
           </div>
           <Text variant="small" className="text-fg-muted">
-            마크다운으로 자유롭게 — 코드·링크·이미지 URL 모두 남길 수 있어요.
+            마크다운으로 자유롭게 — 코드·링크는 물론, 이미지는 파일을 끌어다 놓거나 붙여넣어 올릴 수 있어요.
           </Text>
           <MarkdownEditor value={draft} onChange={setDraft} />
           {error && (
