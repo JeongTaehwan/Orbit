@@ -54,6 +54,7 @@ jobs:
       pull-requests: write # PR 리뷰/코멘트 작성
       issues: write # 이슈 코멘트 작성
       actions: read # (선택) CI 결과를 참고해 더 나은 리뷰 — 읽기 전용, 저위험
+      id-token: write # 액션이 OIDC 로 GitHub 토큰을 발급받는 데 필요 (직접 API 키를 써도 v1 에선 필수)
 
     steps:
       # 기본 체크아웃 = base 레포. fork PR 의 head 를 checkout 하지 않는다(위 보안 주석 참고).
