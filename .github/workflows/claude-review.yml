@@ -1,0 +1,75 @@
+# Orbit — Claude 기반 요청형 코드 리뷰
+#
+# 기존 ci.yml(테스트·린트·타입체크)은 "자동 검사".
+# 이 워크플로우는 "요청 시 리뷰" — PR/이슈 코멘트에서 @claude 를 멘션했을 때만 동작한다.
+# 공식 액션(anthropics/claude-code-action@v1)이 Claude API 를 호출해 코드를 읽고 코멘트를 단다.
+#
+# ⚠️ Orbit 은 public 레포다. 아래 보안 설계를 반드시 유지할 것:
+#   1) 트리거를 신뢰할 수 있는 사람(OWNER/MEMBER/COLLABORATOR)으로 제한 → 외부인 오남용·시크릿 유출 방지
+#   2) 권한은 리뷰에 필요한 최소만 (contents 는 read, 쓰기 권한 없음)
+#   3) fork PR 의 head 코드를 체크아웃하지 않는다 (기본 체크아웃 = base 레포).
+#      diff 는 액션이 GitHub API 로 가져와 "텍스트로" 읽으므로, 시크릿이 있는 러너에서
+#      신뢰할 수 없는 코드가 "실행"되지 않는다.
+
+name: Claude Review
+
+on:
+  # PR/이슈 일반 코멘트 (PR 코멘트도 GitHub 상 issue_comment 로 들어온다)
+  issue_comment:
+    types: [created]
+  # PR 코드 라인에 다는 인라인 리뷰 코멘트
+  pull_request_review_comment:
+    types: [created]
+
+# 같은 코멘트로 중복 실행되지 않게, 리뷰는 이전 실행을 취소하지 않고 그대로 둔다(별도 그룹).
+concurrency:
+  group: claude-review-${{ github.event.issue.number || github.event.pull_request.number }}-${{ github.event.comment.id }}
+  cancel-in-progress: false
+
+jobs:
+  claude:
+    name: Claude 코드 리뷰
+    # ── 보안 게이트 ──────────────────────────────────────────────
+    # (A) 코멘트 본문에 @claude 가 있고,
+    # (B) 그 코멘트를 단 사람이 이 레포의 신뢰 대상일 때만 실행.
+    #     OWNER=소유자, MEMBER=조직 멤버, COLLABORATOR=쓰기 권한 있는 협업자.
+    #     외부인(NONE/CONTRIBUTOR)은 @claude 를 달아도 워크플로우 자체가 트리거되지 않는다.
+    if: |
+      (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude'))
+      ) &&
+      (
+        github.event.comment.author_association == 'OWNER' ||
+        github.event.comment.author_association == 'MEMBER' ||
+        github.event.comment.author_association == 'COLLABORATOR'
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 15 # 폭주 방지 (비용·시간 상한)
+
+    # ── 최소 권한 ────────────────────────────────────────────────
+    # 리뷰(코멘트 달기)에 필요한 것만. 코드를 수정/커밋하지 않으므로 contents 는 read.
+    permissions:
+      contents: read # 레포 코드 읽기
+      pull-requests: write # PR 리뷰/코멘트 작성
+      issues: write # 이슈 코멘트 작성
+      actions: read # (선택) CI 결과를 참고해 더 나은 리뷰 — 읽기 전용, 저위험
+
+    steps:
+      # 기본 체크아웃 = base 레포. fork PR 의 head 를 checkout 하지 않는다(위 보안 주석 참고).
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          # 시크릿은 base 레포 컨텍스트에서만 주입된다(코멘트 트리거이므로 pull_request_target 아님).
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # prompt 를 고정하지 않는다 → 사용자가 @claude 뒤에 적은 요청(리뷰/질문)에 맞춰 응답.
+          # 리뷰 성격·언어·프로젝트 맥락은 아래 시스템 프롬프트로 주입한다.
+          claude_args: |
+            --max-turns 15
+            --model claude-sonnet-4-5
+            --append-system-prompt "당신은 Orbit 프로젝트의 코드 리뷰어입니다. 다음 지침을 지키세요. (1) 모든 리뷰·코멘트는 반드시 한국어로 작성합니다. (2) Orbit 은 개인 학습용 풀스택 앱입니다(백엔드 FastAPI+PostgreSQL, 프론트 Next.js 16+TypeScript). 회사 코드가 아니므로 완벽함보다 학습과 핵심 개선에 초점을 둡니다. (3) 리뷰 관점: 버그 가능성, 보안 이슈, 명확한 개선점, 그리고 저장소 CLAUDE.md 에 정의된 계층 구조(api→services→models, fetch 는 lib/api 에만 등)와 우주 테마 디자인 시스템의 일관성 준수 여부. (4) 사소한 스타일 지적을 나열하지 말고 핵심적이고 실질적으로 도움 되는 피드백 위주로 간결하게 남깁니다. (5) 확신이 없으면 단정하지 말고 질문·제안 형태로 남깁니다. (6) 저장소의 CLAUDE.md 규칙을 존중합니다."
