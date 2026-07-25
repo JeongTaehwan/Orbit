@@ -9,6 +9,8 @@ import { useRequireAuth } from "@/features/auth";
 import { api } from "@/lib/api";
 import { cachePlanets, getCachedPlanets } from "@/lib/planetCache";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { OrbitLoader } from "@/components/ui/OrbitLoader";
 import { StreakCard } from "@/features/streak/StreakCard";
 import type { Planet } from "@/types/planet";
 import type { Streak } from "@/types/streak";
@@ -16,9 +18,14 @@ import { CreatePlanetForm } from "./CreatePlanetForm";
 
 // WebGL 은 브라우저에서만 동작한다 → 서버 렌더를 건너뛴다.
 // (dynamic ssr:false 는 클라이언트 컴포넌트 안에서만 쓸 수 있다)
+// 청크·WebGL 초기화 동안 테마 로더를 보여 준다.
 const OrbitScene = dynamic(() => import("./OrbitScene"), {
   ssr: false,
-  loading: () => null,
+  loading: () => (
+    <div className="flex h-full items-center justify-center">
+      <OrbitLoader size={48} label="행성계를 여는 중…" />
+    </div>
+  ),
 });
 
 /**
@@ -81,7 +88,9 @@ export function SpaceMap() {
     return (
       <main className="py-10">
         <Container size="lg">
-          <Text variant="muted">불러오는 중…</Text>
+          <div className="flex justify-center py-24">
+            <OrbitLoader size={48} />
+          </div>
         </Container>
       </main>
     );
@@ -130,9 +139,22 @@ export function SpaceMap() {
 
         {/* 궤도 지도 — 통계와 확실히 떼어 놓는다 */}
         {loading ? (
-          <Text variant="muted">불러오는 중…</Text>
+          <div className="flex justify-center py-24">
+            <OrbitLoader size={48} label="우주를 그리는 중…" />
+          </div>
         ) : planets.length === 0 ? (
-          <Text variant="muted">아직 행성이 없습니다. “새 행성 만들기”로 시작해 보세요.</Text>
+          <div className="flex min-h-[46vh] items-center justify-center">
+            <EmptyState
+              icon="🪐"
+              title="아직 학습 행성이 없어요"
+              description="첫 학습 행성을 만들어 테라포밍을 시작해보세요. 기록을 쌓을수록 행성이 자라납니다."
+              action={
+                <Button variant="primary" onClick={() => setModalOpen(true)}>
+                  첫 행성 만들기
+                </Button>
+              }
+            />
+          </div>
         ) : (
           <Text variant="muted">끌어서 둘러보고, 휠로 확대·축소할 수 있어요.</Text>
         )}

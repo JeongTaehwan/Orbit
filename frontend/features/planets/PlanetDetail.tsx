@@ -7,6 +7,7 @@ import { Badge, Button, Container, Heading, Text } from "@usetaehwan/ui";
 import { Header } from "@/components/Header";
 import { TransitionLink } from "@/components/TransitionLink";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { OrbitLoader } from "@/components/ui/OrbitLoader";
 import { useRequireAuth } from "@/features/auth";
 import { PlanetShowcase } from "@/features/planets/PlanetShowcase";
 import { api } from "@/lib/api";
@@ -113,7 +114,9 @@ export function PlanetDetail({ planetId }: { planetId: number }) {
         <Header className="mb-6" />
 
         {authLoading || loading ? (
-          <Text variant="muted">불러오는 중…</Text>
+          <div className="flex min-h-[calc(100dvh-10rem)] items-center justify-center">
+            <OrbitLoader size={48} />
+          </div>
         ) : error && !planet ? (
           <Text as="p" variant="body" className="text-danger">
             {error}

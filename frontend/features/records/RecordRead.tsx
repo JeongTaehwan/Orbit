@@ -11,6 +11,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Text } from "@usetaehwan/ui";
+import { OrbitLoader } from "@/components/ui/OrbitLoader";
 import { api } from "@/lib/api";
 import type { LearningRecord } from "@/types/planet";
 import { MarkdownContent } from "./MarkdownContent";
@@ -56,7 +57,9 @@ export function RecordRead({ planetId, recordId }: { planetId: number; recordId:
           {error}
         </Text>
       ) : record === null ? (
-        <Text variant="muted">불러오는 중…</Text>
+        <div className="flex justify-center py-20">
+          <OrbitLoader label="기록을 불러오는 중…" />
+        </div>
       ) : (
         <article className="orbit-fade">
           <time className="block text-sm text-fg-muted">

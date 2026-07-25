@@ -9,9 +9,11 @@
  */
 
 import { useEffect, useState } from "react";
-import { PenLine, FileText } from "lucide-react";
+import { PenLine } from "lucide-react";
 import { Button, Heading, Text } from "@usetaehwan/ui";
 import { TransitionLink } from "@/components/TransitionLink";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { OrbitLoader } from "@/components/ui/OrbitLoader";
 import { api } from "@/lib/api";
 import type { RecordSummary } from "@/types/planet";
 import { RecordPageFrame } from "./RecordPageFrame";
@@ -58,14 +60,21 @@ export function RecordList({ planetId }: { planetId: number }) {
           {error}
         </Text>
       ) : records === null ? (
-        <Text variant="muted">불러오는 중…</Text>
+        <div className="flex justify-center py-20">
+          <OrbitLoader label="기록을 불러오는 중…" />
+        </div>
       ) : records.length === 0 ? (
-        <div className="orbit-fade flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
-          <FileText size={28} className="text-fg-muted" aria-hidden />
-          <Text variant="muted">아직 기록이 없습니다.</Text>
-          <TransitionLink href={`/planets/${planetId}/records/new`}>
-            <Button variant="primary">첫 기록 작성하기</Button>
-          </TransitionLink>
+        <div className="py-10">
+          <EmptyState
+            icon="✍️"
+            title="아직 기록이 없어요"
+            description="첫 기록으로 이 행성의 테라포밍을 시작하세요. 기록이 쌓일수록 행성이 자라납니다."
+            action={
+              <TransitionLink href={`/planets/${planetId}/records/new`}>
+                <Button variant="primary">첫 기록 작성하기</Button>
+              </TransitionLink>
+            }
+          />
         </div>
       ) : (
         <ul className="orbit-fade flex flex-col gap-2.5">

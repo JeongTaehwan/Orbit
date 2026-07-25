@@ -18,6 +18,7 @@ import dynamic from "next/dynamic";
 import type { Difficulty } from "@/types/planet";
 import { difficultyLabel } from "@/lib/utils/difficulty";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
+import { OrbitLoader } from "@/components/ui/OrbitLoader";
 
 export interface Planet3DProps {
   /** 테라포밍 진행도 0~100 */
@@ -38,8 +39,12 @@ export interface Planet3DProps {
 // 렌더 안에서 부르면 매 렌더마다 새 컴포넌트가 만들어져 계속 언마운트/재마운트된다.
 const PlanetScene = dynamic(() => import("./planet3d/PlanetScene"), {
   ssr: false,
-  // 불러오는 동안 같은 크기의 빈 자리를 잡아둔다 (레이아웃이 흔들리지 않게)
-  loading: () => null,
+  // 청크·WebGL 초기화 동안 가운데에 작은 테마 로더 (레이아웃은 그대로 유지)
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center">
+      <OrbitLoader size={28} />
+    </div>
+  ),
 });
 
 export function Planet3D({

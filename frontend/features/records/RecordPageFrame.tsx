@@ -11,9 +11,10 @@
  */
 
 import { ArrowLeft } from "lucide-react";
-import { Container, Text } from "@usetaehwan/ui";
+import { Container } from "@usetaehwan/ui";
 import { Header } from "@/components/Header";
 import { TransitionLink } from "@/components/TransitionLink";
+import { OrbitLoader } from "@/components/ui/OrbitLoader";
 import { useRequireAuth } from "@/features/auth";
 
 interface Props {
@@ -34,7 +35,9 @@ export function RecordPageFrame({ backHref, backLabel, fill = false, children }:
         <Header className="mb-6" />
 
         {loading || !user ? (
-          <Text variant="muted">불러오는 중…</Text>
+          <div className="flex justify-center py-20">
+            <OrbitLoader />
+          </div>
         ) : (
           <>
             <TransitionLink

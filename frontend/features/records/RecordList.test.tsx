@@ -68,7 +68,7 @@ describe("RecordList", () => {
     mockedApi.listRecords.mockResolvedValue([]);
     render(<RecordList planetId={7} />);
 
-    expect(await screen.findByText(/아직 기록이 없습니다/)).toBeInTheDocument();
+    expect(await screen.findByText(/아직 기록이 없어요/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "첫 기록 작성하기" })).toHaveAttribute(
       "href",
       "/planets/7/records/new",
@@ -78,7 +78,7 @@ describe("RecordList", () => {
   it("돌아가기는 행성 상세로 향한다", async () => {
     mockedApi.listRecords.mockResolvedValue([]);
     render(<RecordList planetId={7} />);
-    await screen.findByText(/아직 기록이 없습니다/);
+    await screen.findByText(/아직 기록이 없어요/);
 
     expect(screen.getByRole("link", { name: /행성으로/ })).toHaveAttribute("href", "/planets/7");
   });
