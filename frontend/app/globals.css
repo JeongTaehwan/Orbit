@@ -686,13 +686,56 @@ body {
   }
 }
 
+/* ── 기록 반영 펄스 ── */
+/* 기록을 저장해 진행도가 오르면 행성이 살짝 밝게 번쩍인다 (100% 축하보다 훨씬 절제).
+   요소를 key 로 remount 해 매번 다시 재생한다. */
+.orbit-pulse-halo {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 76%;
+  height: 76%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--glow-color, var(--color-brand)) 45%, transparent) 0%,
+    transparent 64%
+  );
+  animation: orbit-pulse-halo 680ms ease-out both;
+}
+/* 단계(25/50/75%) 경계를 넘을 땐 조금 더 크고 길게 */
+.orbit-pulse-halo--stage {
+  width: 94%;
+  height: 94%;
+  animation-duration: 1000ms;
+}
+@keyframes orbit-pulse-halo {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  28% {
+    opacity: 0.85;
+    transform: scale(1.12);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
 /* ── 모션 최소화: 우주 배경·궤도·발광·등장 모두 정지 ── */
 @media (prefers-reduced-motion: reduce) {
   .orbit-star--tw,
   .orbit-ring--spin,
   .orbit-planet-glow--pulse,
-  .orbit-flame {
+  .orbit-flame,
+  .orbit-pulse-halo {
     animation: none !important;
+  }
+  .orbit-pulse-halo {
+    opacity: 0;
   }
   .orbit-rise,
   .orbit-fade {

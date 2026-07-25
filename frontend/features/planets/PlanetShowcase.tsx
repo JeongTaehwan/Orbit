@@ -23,6 +23,11 @@ interface Props {
   celebrating?: boolean;
   /** 행성별 seed(보통 행성 id) — 대륙·색조를 조금씩 다르게 */
   seed?: number;
+  /**
+   * 기록 반영 펄스 — 진행도가 오르면 행성이 살짝 번쩍인다.
+   * token 이 바뀔 때마다 다시 재생(remount). kind="stage" 는 단계 경계용(더 큼).
+   */
+  pulse?: { kind: "soft" | "stage"; token: number } | null;
 }
 
 export function PlanetShowcase({
@@ -33,6 +38,7 @@ export function PlanetShowcase({
   viewTransitionName,
   celebrating = false,
   seed = 0,
+  pulse = null,
 }: Props) {
   const p = Math.min(100, Math.max(0, progress));
   // 발광 세기: 진행도 0.15 → 0.55 로 증가, 완성이면 최대
@@ -76,6 +82,15 @@ export function PlanetShowcase({
       {/* 축하 후광 — 완성 순간 뒤에서 확 번졌다 사그라드는 배경 빛 (1회) */}
       {celebrating && (
         <div className="orbit-celebrate-halo" style={{ ["--glow-color" as string]: glowColor }} />
+      )}
+
+      {/* 기록 반영 펄스 — 진행도가 오를 때 살짝 번쩍 (token 마다 remount 해 재생) */}
+      {pulse && (
+        <div
+          key={pulse.token}
+          className={`orbit-pulse-halo ${pulse.kind === "stage" ? "orbit-pulse-halo--stage" : ""}`}
+          style={{ ["--glow-color" as string]: glowColor }}
+        />
       )}
 
       {/* 행성 본체 (링·발광 위로).

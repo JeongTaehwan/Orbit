@@ -32,6 +32,9 @@ export function PlanetDetail({ planetId }: { planetId: number }) {
   const [loading, setLoading] = useState(() => getCachedPlanet(planetId) === null);
   const [error, setError] = useState<string | null>(null);
   const [celebrating, setCelebrating] = useState(false);
+  // 기록 반영 펄스 (진행도가 오를 때 살짝 번쩍). token 이 바뀌면 다시 재생된다.
+  const [pulse, setPulse] = useState<{ kind: "soft" | "stage"; token: number } | null>(null);
+  const pulseToken = useRef(0);
 
   // "처음 완성되는 순간" 판정용: 서버 응답 직전까지 알고 있던 진행도.
   // (loadPlanet 이 캐시를 덮어쓰기 전에 마운트 시점의 캐시값을 붙잡아 둔다)
@@ -64,6 +67,12 @@ export function PlanetDetail({ planetId }: { planetId: number }) {
             CELEBRATE_DELAY_MS + CELEBRATE_DURATION_MS,
           ),
         );
+      } else if (!reducedMotion && prev !== null && fresh.progress > prev && !fresh.is_completed) {
+        // 100% 는 아니지만 진행도가 올랐다 → 절제된 펄스.
+        // 단계 경계(25/50/75%)를 넘었으면 조금 더 눈에 띄게.
+        const crossedStage = Math.floor(prev / 25) < Math.floor(fresh.progress / 25);
+        pulseToken.current += 1;
+        setPulse({ kind: crossedStage ? "stage" : "soft", token: pulseToken.current });
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "행성을 불러오지 못했습니다.");
@@ -122,6 +131,7 @@ export function PlanetDetail({ planetId }: { planetId: number }) {
                 viewTransitionName={`planet-${planet.id}`}
                 celebrating={celebrating}
                 seed={planet.id}
+                pulse={pulse}
               />
             </div>
 

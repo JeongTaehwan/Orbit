@@ -145,6 +145,19 @@ const _v = new THREE.Vector3();
 /** 호버 시 행성이 커지는 배율 */
 const HOVER_SCALE = 1.22;
 
+/** 순차 등장 — 행성 하나가 나타나는 시간(초)과 행성 간 간격(초) */
+const ENTER_DUR = 0.42;
+const ENTER_STAGGER = 0.09;
+
+const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+
+/** 살짝 튀어올랐다 안착하는 등장 곡선 (경쾌한 pop-in) */
+function easeOutBack(x: number): number {
+  const c1 = 1.2;
+  const c3 = c1 + 1;
+  return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+}
+
 /** 행성으로 날아 들어가는 시간(초) */
 const DIVE_SEC = 1.05;
 
@@ -217,6 +230,10 @@ function OrbitMotion({
 }) {
   const elapsed = useRef(0);
   const dive = useRef<Dive | null>(null);
+  // 호버 배율(1↔HOVER_SCALE)을 행성별로 부드럽게 damp. 등장 배율과 곱해 쓴다.
+  const hoverFactors = useRef<number[]>([]);
+  // 마운트 후 흐른 시간 — 순차 등장(stagger)용
+  const enterElapsed = useRef(0);
   const camera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
 
@@ -239,6 +256,7 @@ function OrbitMotion({
     if (animate && hovered.current === null && dive.current === null) {
       elapsed.current += delta;
     }
+    enterElapsed.current += delta;
 
     bodies.forEach((body, i) => {
       const group = groupRefs.current[i];
@@ -254,8 +272,17 @@ function OrbitMotion({
 
       // 호버 반응: 목표 배율로 부드럽게 다가간다 (CSS transition 을 손으로 구현한 셈)
       const target = hovered.current === i ? HOVER_SCALE : 1;
-      const next = THREE.MathUtils.damp(group.scale.x, target, 12, delta);
-      group.scale.setScalar(next);
+      const hf = THREE.MathUtils.damp(hoverFactors.current[i] ?? 1, target, 12, delta);
+      hoverFactors.current[i] = hf;
+
+      // 순차 등장: 안쪽 행성부터 톡톡 나타난다 (reduced-motion 이면 즉시 1)
+      let entrance = 1;
+      if (animate) {
+        const e = clamp01((enterElapsed.current - i * ENTER_STAGGER) / ENTER_DUR);
+        entrance = easeOutBack(e);
+      }
+
+      group.scale.setScalar(hf * entrance);
 
       // 라벨: 행성 아래쪽 지점을 화면 좌표로 투영해 DOM 을 옮긴다
       const el = labelRefs.current[i];
@@ -269,9 +296,12 @@ function OrbitMotion({
         el.style.pointerEvents = "none";
         return;
       }
-      // 날아가는 동안에는 라벨을 걷어낸다 (화면을 가리지 않게)
-      el.style.opacity = dive.current ? String(Math.max(0, 1 - dive.current.t * 2)) : "1";
-      el.style.pointerEvents = dive.current ? "none" : "auto";
+      // 등장 중에는 라벨도 함께 페이드, 날아가는 동안에는 걷어낸다
+      const enterFade = Math.min(1, entrance);
+      el.style.opacity = dive.current
+        ? String(Math.max(0, 1 - dive.current.t * 2))
+        : String(enterFade);
+      el.style.pointerEvents = dive.current || enterFade < 0.9 ? "none" : "auto";
       const x = (_v.x * 0.5 + 0.5) * size.width;
       const y = (-_v.y * 0.5 + 0.5) * size.height;
       el.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0) translate(-50%, 0)`;
