@@ -8,7 +8,8 @@
  * - 색은 행성 난이도의 대기색 토큰을 따른다. reduced-motion 이면 회전·맥동 정지.
  */
 
-import { Planet } from "@/components/Planet";
+import { Planet3D } from "@/components/Planet3D";
+import { PLANET_3D_BOX } from "@/lib/utils/planet3d";
 import type { Difficulty } from "@/types/planet";
 
 interface Props {
@@ -31,9 +32,12 @@ export function PlanetShowcase({
   // 발광 세기: 진행도 0.15 → 0.55 로 증가, 완성이면 최대
   const glow = isCompleted ? 0.6 : 0.15 + (p / 100) * 0.4;
   const glowColor = `var(--color-planet-${difficulty}-atmosphere)`;
+  // 3D 캔버스 박스는 구체보다 크다(대기 헤일로 여백). 레이아웃도 그만큼 잡아야
+  // 아래 제목과 겹치지 않는다. 궤도 링·발광은 size 기준 그대로라 비율은 유지된다.
+  const box = Math.round(size * PLANET_3D_BOX);
 
   return (
-    <div className="orbit-showcase" style={{ width: size, height: size }}>
+    <div className="orbit-showcase" style={{ width: box, height: box }}>
       {/* 바깥 궤도 (크고 느리게) */}
       <div
         className="orbit-ring-tilt"
@@ -63,9 +67,14 @@ export function PlanetShowcase({
         style={{ ["--glow" as string]: glow, ["--glow-color" as string]: glowColor }}
       />
 
-      {/* 행성 본체 (링·발광 위로) */}
-      <div className="relative z-10" style={viewTransitionName ? { viewTransitionName } : undefined}>
-        <Planet progress={p} difficulty={difficulty} size={size} animate />
+      {/* 행성 본체 (링·발광 위로).
+          3D 는 대기 헤일로가 번질 자리를 남기려고 카메라를 물려 두어서, 같은 px 박스면
+          구체가 작게 보인다. 그만큼 박스를 키워 링·발광과의 크기 비율을 맞춘다. */}
+      <div
+        className="relative z-10"
+        style={viewTransitionName ? { viewTransitionName } : undefined}
+      >
+        <Planet3D progress={p} difficulty={difficulty} size={box} animate />
       </div>
     </div>
   );

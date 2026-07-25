@@ -1,18 +1,31 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { Button, Container, Text } from "@usetaehwan/ui";
 import { Header } from "@/components/Header";
 import { Modal } from "@/components/ui/Modal";
 import { useRequireAuth } from "@/features/auth";
 import { api } from "@/lib/api";
 import { cachePlanets, getCachedPlanets } from "@/lib/planetCache";
-import { computeMapLayout } from "@/lib/utils/mapLayout";
+import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { StreakCard } from "@/features/streak/StreakCard";
 import type { Planet } from "@/types/planet";
 import type { Streak } from "@/types/streak";
 import { CreatePlanetForm } from "./CreatePlanetForm";
-import { MapPlanet } from "./MapPlanet";
+
+// WebGL 은 브라우저에서만 동작한다 → 서버 렌더를 건너뛴다.
+// (dynamic ssr:false 는 클라이언트 컴포넌트 안에서만 쓸 수 있다)
+const OrbitScene = dynamic(() => import("./OrbitScene"), {
+  ssr: false,
+  loading: () => null,
+});
+
+/**
+ * 궤도 지도 높이 — 화면 높이에 맞춰 크게 잡는다.
+ * 넓게 봐야 궤도가 늘어나도 전체가 한눈에 들어온다.
+ */
+const MAP_HEIGHT_CLASS = "h-[82vh] min-h-[560px]";
 
 // 통계 타일
 function Stat({ label, value, delay }: { label: string; value: number; delay: number }) {
@@ -36,10 +49,7 @@ export function SpaceMap() {
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [streak, setStreak] = useState<Streak | null>(null);
-
-  // 배치 영역 폭 측정 (반응형 scatter)
-  const areaRef = useRef<HTMLDivElement>(null);
-  const [areaWidth, setAreaWidth] = useState(0);
+  const reducedMotion = usePrefersReducedMotion();
 
   async function load(showLoading: boolean) {
     if (showLoading) setLoading(true);
@@ -66,22 +76,6 @@ export function SpaceMap() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  // 컨테이너 폭을 관찰해 배치를 다시 계산 (ResizeObserver 없으면 폴백 폭 사용)
-  useEffect(() => {
-    const el = areaRef.current;
-    if (!el) return;
-    setAreaWidth(el.clientWidth);
-    if (typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver((entries) => setAreaWidth(entries[0].contentRect.width));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [user, loading]);
-
-  const layout = useMemo(
-    () => computeMapLayout(planets, areaWidth || 1024),
-    [planets, areaWidth],
-  );
-
   // 인증 확인 전/미로그인(리다이렉트 중)에는 지도를 그리지 않는다.
   if (authLoading || !user) {
     return (
@@ -97,7 +91,9 @@ export function SpaceMap() {
   const completed = planets.filter((p) => p.is_completed).length;
 
   return (
-    <main className="py-10">
+    // overflow-x-hidden: 아래 지도를 화면 전체 폭(w-screen)으로 빼내므로
+    // 세로 스크롤바 폭만큼 가로로 넘치는 것을 막는다.
+    <main className="overflow-x-hidden py-10">
       <Container size="lg">
         {/* 헤더 (로고 + 새 행성 버튼) */}
         <div className="mb-8">
@@ -125,19 +121,24 @@ export function SpaceMap() {
           </p>
         )}
 
-        {/* 우주 공간: 행성들이 흩어져 떠 있다 (카드 없음) */}
+        {/* 궤도 지도 — 통계와 확실히 떼어 놓는다 */}
         {loading ? (
           <Text variant="muted">불러오는 중…</Text>
         ) : planets.length === 0 ? (
           <Text variant="muted">아직 행성이 없습니다. “새 행성 만들기”로 시작해 보세요.</Text>
         ) : (
-          <div ref={areaRef} className="relative w-full" style={{ height: layout.height }}>
-            {layout.items.map((item) => (
-              <MapPlanet key={item.planet.id} item={item} />
-            ))}
-          </div>
+          <Text variant="muted">끌어서 둘러보고, 휠로 확대·축소할 수 있어요.</Text>
         )}
       </Container>
+
+      {/* 궤도 지도 — Container 밖으로 빼내 화면 전체 폭을 쓴다 */}
+      {!loading && planets.length > 0 && (
+        <div
+          className={`relative left-1/2 mt-3 w-screen -translate-x-1/2 ${MAP_HEIGHT_CLASS}`}
+        >
+          <OrbitScene planets={planets} animate={!reducedMotion} />
+        </div>
+      )}
 
       {/* 새 행성 모달 */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="새 행성 만들기">

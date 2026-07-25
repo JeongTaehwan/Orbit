@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/features/auth";
@@ -26,6 +26,18 @@ export const metadata: Metadata = {
     // TODO(og-image): 준비되면 app/opengraph-image.(png|tsx) 를 두거나 아래를 채운다.
     // images: ["/og-image.png"],
   },
+};
+
+/**
+ * 새로고침 시 흰 화면이 번쩍이는 것을 막는다.
+ *
+ * globals.css 에도 color-scheme: dark 가 있지만, 그건 스타일시트가 다 로드된 뒤에야
+ * 적용된다. 그 전까지 브라우저는 기본값(밝음)으로 배경을 칠한다.
+ * 여기 두면 <meta name="color-scheme"> 로 head 에 나가서 CSS 보다 먼저 반영된다.
+ */
+export const viewport: Viewport = {
+  colorScheme: "dark",
+  themeColor: "#0a0d16", // --color-bg 와 동일
 };
 
 export default function RootLayout({
