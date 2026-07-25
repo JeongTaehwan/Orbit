@@ -14,6 +14,12 @@ describe("planetTexture", () => {
     expect(createLandMask("easy")).toBeNull();
   });
 
+  it("variant(행성 seed)를 받아도 예외 없이 동작한다", () => {
+    // jsdom 에선 여전히 null 이지만, 인자 시그니처가 호환되는지 확인
+    expect(() => createLandMask("easy", 7)).not.toThrow();
+    expect(createLandMask("easy", 7)).toBeNull();
+  });
+
   it("글로우 텍스처도 같은 규칙을 따른다", () => {
     expect(() => createGlowTexture()).not.toThrow();
     expect(createGlowTexture()).toBeNull();

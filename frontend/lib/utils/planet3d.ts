@@ -71,6 +71,84 @@ export function mixHex(from: string, to: string, t: number): string {
   return `#${hex(ch(16))}${hex(ch(8))}${hex(ch(0))}`;
 }
 
+const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+
+/** 색조(hue, 도)와 명도(lightness, ±)를 조금 틀어 같은 계열의 다른 색을 만든다 */
+export function shiftColor(hex: string, hueDeg: number, lightDelta: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  const r = ((n >> 16) & 0xff) / 255;
+  const g = ((n >> 8) & 0xff) / 255;
+  const b = (n & 0xff) / 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  const l = (max + min) / 2;
+  const d = max - min;
+  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+  if (d !== 0) {
+    if (max === r) h = ((g - b) / d) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+
+  const h2 = (((h + hueDeg) % 360) + 360) % 360;
+  const l2 = clamp01(l + lightDelta);
+
+  // hsl → rgb
+  const c = (1 - Math.abs(2 * l2 - 1)) * s;
+  const x = c * (1 - Math.abs(((h2 / 60) % 2) - 1));
+  const m = l2 - c / 2;
+  let rr = 0;
+  let gg = 0;
+  let bb = 0;
+  if (h2 < 60) [rr, gg, bb] = [c, x, 0];
+  else if (h2 < 120) [rr, gg, bb] = [x, c, 0];
+  else if (h2 < 180) [rr, gg, bb] = [0, c, x];
+  else if (h2 < 240) [rr, gg, bb] = [0, x, c];
+  else if (h2 < 300) [rr, gg, bb] = [x, 0, c];
+  else [rr, gg, bb] = [c, 0, x];
+
+  const hx = (v: number) =>
+    Math.round((v + m) * 255)
+      .toString(16)
+      .padStart(2, "0");
+  return `#${hx(rr)}${hx(gg)}${hx(bb)}`;
+}
+
+/** variant(행성별 seed) → [0,1) 결정적 난수기 (mulberry32) */
+function variantRand(variant: number): () => number {
+  let a = (variant * 0x9e3779b1) >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * 행성별로 색을 조금씩 틀어 같은 난이도여도 개성이 생기게 한다.
+ * 색조 ±14°, 명도 ±6% 정도로 절제 — 난이도 계열(따뜻/표준/차가운)은 유지된다.
+ * variant 0 은 변형 없음(프리뷰·기본값이 기존 그대로 보이도록).
+ */
+export function variedPalette(base: PlanetPalette, variant: number): PlanetPalette {
+  if (variant === 0) return base;
+  const rand = variantRand(variant);
+  const hue = (rand() * 2 - 1) * 14;
+  const light = (rand() * 2 - 1) * 0.06;
+  const v = (hex: string) => shiftColor(hex, hue, light);
+  return {
+    rock: v(base.rock),
+    rockDark: v(base.rockDark),
+    ocean: v(base.ocean),
+    veg: v(base.veg),
+    atmosphere: v(base.atmosphere),
+  };
+}
+
 export interface PlanetVisual {
   /** 지표 바탕색 (암석 → 바다) */
   surface: string;
@@ -93,9 +171,14 @@ export interface PlanetVisual {
  *   48~74 바다 차오름
  *   72~95 식생 번짐
  */
-export function planetVisual(progress: number, difficulty: Difficulty): PlanetVisual {
+export function planetVisual(
+  progress: number,
+  difficulty: Difficulty,
+  variant = 0,
+): PlanetVisual {
   const p = Math.min(100, Math.max(0, progress));
-  const c = PLANET_PALETTE[difficulty];
+  // 난이도 팔레트를 행성별로 살짝 틀어 같은 난이도여도 색이 조금씩 다르다
+  const c = variedPalette(PLANET_PALETTE[difficulty], variant);
 
   const atmo = smoothstep(18, 48, p);
   const oceanAmount = smoothstep(48, 74, p);

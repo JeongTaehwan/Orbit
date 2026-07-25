@@ -3,8 +3,10 @@ import {
   PLANET_PALETTE,
   mixHex,
   planetVisual,
+  shiftColor,
   smoothstep,
   sphereSegments,
+  variedPalette,
 } from "./planet3d";
 
 describe("mixHex", () => {
@@ -45,11 +47,58 @@ describe("smoothstep", () => {
   });
 });
 
+describe("shiftColor", () => {
+  it("변형이 0 이면 (반올림 오차 범위 내) 원래 색을 유지한다", () => {
+    // hue/light 변형 0 → 왕복 변환해도 사실상 같은 색
+    const out = shiftColor("#2f6fb0", 0, 0);
+    expect(out).toMatch(/^#[0-9a-f]{6}$/);
+    const near = (a: string, b: string) => {
+      for (let i = 1; i < 7; i += 2) {
+        if (Math.abs(parseInt(a.slice(i, i + 2), 16) - parseInt(b.slice(i, i + 2), 16)) > 2)
+          return false;
+      }
+      return true;
+    };
+    expect(near(out, "#2f6fb0")).toBe(true);
+  });
+
+  it("색조를 틀면 색이 실제로 달라진다", () => {
+    expect(shiftColor("#2f6fb0", 30, 0)).not.toBe("#2f6fb0");
+  });
+});
+
+describe("variedPalette", () => {
+  it("variant 0 은 원본 팔레트 그대로 (프리뷰·기본값 보존)", () => {
+    expect(variedPalette(PLANET_PALETTE.easy, 0)).toEqual(PLANET_PALETTE.easy);
+  });
+
+  it("variant 가 다르면 색도 달라진다 (행성마다 개성)", () => {
+    const a = variedPalette(PLANET_PALETTE.easy, 2);
+    const b = variedPalette(PLANET_PALETTE.easy, 9);
+    expect(a.ocean).not.toBe(PLANET_PALETTE.easy.ocean);
+    expect(a.ocean).not.toBe(b.ocean);
+  });
+
+  it("같은 variant 는 항상 같은 색 (결정적)", () => {
+    expect(variedPalette(PLANET_PALETTE.hard, 5)).toEqual(
+      variedPalette(PLANET_PALETTE.hard, 5),
+    );
+  });
+});
+
 describe("planetVisual", () => {
   it("진행도 0 이면 암석색 그대로 (바다 없음)", () => {
     const v = planetVisual(0, "normal");
     expect(v.surface).toBe(PLANET_PALETTE.normal.rock);
     expect(v.atmosphereOpacity).toBe(0);
+  });
+
+  it("행성별 seed(variant)가 다르면 완성 색도 조금씩 다르다", () => {
+    const a = planetVisual(100, "easy", 2);
+    const b = planetVisual(100, "easy", 9);
+    expect(a.surface).not.toBe(b.surface); // 같은 난이도·진행도여도 색이 다름
+    // variant 0(기본)은 팔레트 그대로
+    expect(planetVisual(100, "easy", 0).surface).toBe(PLANET_PALETTE.easy.ocean);
   });
 
   it("진행도 100 이면 바다색 + 식생색", () => {

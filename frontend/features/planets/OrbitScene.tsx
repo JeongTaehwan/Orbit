@@ -133,6 +133,8 @@ function OrbitPlanet({
         segments={24}
         spinning={animate}
         scale={body.size}
+        // 행성마다 대륙·색조를 조금씩 다르게 (id 를 seed 로)
+        seed={body.planet.id}
       />
     </group>
   );

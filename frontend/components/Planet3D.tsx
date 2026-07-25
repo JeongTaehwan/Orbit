@@ -28,6 +28,10 @@ export interface Planet3DProps {
   size?: number;
   /** 자전 애니메이션 (기본 true). reduced-motion 이면 자동 정지 */
   animate?: boolean;
+  /** 완성 축하 연출 재생 (reduced-motion 이면 무시) */
+  celebrating?: boolean;
+  /** 행성별 seed(보통 행성 id) — 대륙·색조를 조금씩 다르게 */
+  seed?: number;
 }
 
 // dynamic() 은 모듈 최상단에서 한 번만 호출한다.
@@ -38,7 +42,14 @@ const PlanetScene = dynamic(() => import("./planet3d/PlanetScene"), {
   loading: () => null,
 });
 
-export function Planet3D({ progress, difficulty, size = 160, animate = true }: Planet3DProps) {
+export function Planet3D({
+  progress,
+  difficulty,
+  size = 160,
+  animate = true,
+  celebrating = false,
+  seed = 0,
+}: Planet3DProps) {
   const reducedMotion = usePrefersReducedMotion();
   const p = Math.min(100, Math.max(0, progress));
 
@@ -53,6 +64,9 @@ export function Planet3D({ progress, difficulty, size = 160, animate = true }: P
         difficulty={difficulty}
         size={size}
         spinning={animate && !reducedMotion}
+        // 모션 최소화 설정에선 축하 연출을 재생하지 않는다
+        celebrating={celebrating && !reducedMotion}
+        seed={seed}
       />
     </div>
   );
