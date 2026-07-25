@@ -8,9 +8,9 @@ DB 는 시각을 UTC 로 저장하지만 "며칠 연속"은 사용자가 사는 
 자정을 기준으로 세야 한다. 그래서 계산 직전에 KST 로 변환해 '날짜'만 뽑아 쓴다.
 """
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
-from typing import Iterable
 
 # 한국 표준시 (UTC+9). 서머타임이 없어 고정 오프셋으로 충분하다.
 KST = timezone(timedelta(hours=9))
@@ -64,7 +64,7 @@ def calculate_streak(
 
     # ── 최장 연속: 앞에서부터 훑으며 끊길 때마다 다시 센다 ──
     longest = run = 1
-    for prev, cur in zip(days, days[1:]):
+    for prev, cur in zip(days, days[1:], strict=False):
         run = run + 1 if cur - prev == ONE_DAY else 1
         longest = max(longest, run)
 

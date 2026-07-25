@@ -1,0 +1,15 @@
+# Orbit 백엔드 lint 설정 (ruff)
+line-length = 100
+
+[lint]
+# E/W: pycodestyle, F: pyflakes(미사용 import 등), I: import 정렬,
+# B: bugbear(흔한 버그 패턴), UP: 파이썬 최신 문법 권장
+select = ["E", "W", "F", "I", "B", "UP"]
+
+[lint.flake8-bugbear]
+# FastAPI 의 Depends/Query 등은 인자 기본값에서 호출하는 게 정상 패턴 → B008 오탐 제외
+extend-immutable-calls = [
+  "fastapi.Depends", "fastapi.Query", "fastapi.Header",
+  "fastapi.Path", "fastapi.Body", "fastapi.File",
+  "fastapi.Form", "fastapi.Cookie", "fastapi.Security",
+]
