@@ -133,8 +133,8 @@ def _make_planet(client):
 
 def _add_record_at(client, planet_id: int, when: datetime) -> int:
     """기록을 만든 뒤 created_at 을 원하는 시각으로 바꾼다 (과거 날짜 시나리오용)."""
-    from tests.conftest import TestingSessionLocal
     from app.models import Record
+    from tests.conftest import TestingSessionLocal
 
     rec_id = client.post(f"/planets/{planet_id}/records", json={"content": "x"}).json()["id"]
     db = TestingSessionLocal()

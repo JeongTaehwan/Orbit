@@ -77,7 +77,8 @@ def test_progress_updates_with_records(client):
 
 
 def test_delete_planet(client):
-    planet_id = client.post("/planets", json={"name": "삭제대상", "difficulty": "easy"}).json()["id"]
+    created = client.post("/planets", json={"name": "삭제대상", "difficulty": "easy"})
+    planet_id = created.json()["id"]
 
     res = client.delete(f"/planets/{planet_id}")
     assert res.status_code == 204

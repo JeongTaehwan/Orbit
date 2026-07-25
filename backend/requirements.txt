@@ -12,5 +12,6 @@ httpx==0.28.1             # 구글 OAuth 서버-사이드 호출 (TestClient도 
 python-multipart==0.0.32  # multipart/form-data 파싱 (파일 업로드에 필수)
 cloudinary==1.45.0        # 이미지 저장소 SDK (services/uploads.py)
 
-# --- 테스트용 (개발 환경에서만 필요) ---
+# --- 테스트·린트용 (개발 환경에서만 필요) ---
 pytest==9.1.1             # 테스트 러너
+ruff==0.16.0              # 린터/포매터 (설정: ruff.toml)
