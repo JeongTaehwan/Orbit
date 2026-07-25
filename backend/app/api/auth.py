@@ -28,7 +28,7 @@ def google_login():
         state,
         max_age=300,
         httponly=True,
-        samesite="lax",
+        samesite=config.COOKIE_SAMESITE,
         secure=config.COOKIE_SECURE,
     )
     return res
@@ -77,7 +77,7 @@ async def google_callback(
         create_session_token(user.id),
         max_age=config.SESSION_MAX_AGE,
         httponly=True,
-        samesite="lax",
+        samesite=config.COOKIE_SAMESITE,
         secure=config.COOKIE_SECURE,
         path="/",
     )
@@ -88,7 +88,13 @@ async def google_callback(
 @router.post("/logout")
 def logout(response: Response):
     """세션 쿠키 삭제."""
-    response.delete_cookie(config.SESSION_COOKIE_NAME, path="/")
+    # 삭제 쿠키도 발급 때와 같은 속성이어야 브라우저가 같은 쿠키로 인식해 지운다.
+    response.delete_cookie(
+        config.SESSION_COOKIE_NAME,
+        path="/",
+        samesite=config.COOKIE_SAMESITE,
+        secure=config.COOKIE_SECURE,
+    )
     return {"ok": True}
 
 

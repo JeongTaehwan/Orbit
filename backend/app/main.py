@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import models  # noqa: F401  (import 해야 테이블이 Base에 등록됨)
 from app.api import auth, me, planets, records, uploads
+from app.core import config
 from app.core.database import Base, engine
 
 
@@ -21,7 +22,7 @@ app = FastAPI(title="Orbit API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.js 개발 서버
+    allow_origins=config.CORS_ORIGINS,  # 환경변수 CORS_ORIGINS (없으면 로컬 개발 서버)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
