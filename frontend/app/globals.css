@@ -202,6 +202,26 @@ body {
   border: 1px solid var(--color-border);
 }
 
+/* 읽기 페이지용 확대 변형 — 본문·제목·이미지를 크고 시원하게 (색·구조는 그대로) */
+.orbit-markdown--doc {
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+.orbit-markdown--doc h1 {
+  font-size: 1.9rem;
+}
+.orbit-markdown--doc h2 {
+  font-size: 1.5rem;
+}
+.orbit-markdown--doc h3 {
+  font-size: 1.25rem;
+}
+.orbit-markdown--doc img {
+  /* 문서 폭을 꽉 채워 크게 */
+  width: 100%;
+  margin: 0.4em 0;
+}
+
 /* 표 */
 .orbit-markdown table {
   border-collapse: collapse;
@@ -583,11 +603,38 @@ body {
   filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-brand) 45%, transparent));
 }
 
+/* ── 스트릭 불꽃: 실제로 타오르듯 일렁인다 (밑동을 축으로 흔들림 + 밝기 명멸) ── */
+.orbit-flame {
+  display: inline-block;
+  transform-origin: bottom center;
+  animation: orbit-flame 1.1s ease-in-out infinite;
+}
+@keyframes orbit-flame {
+  0%,
+  100% {
+    transform: scale(1) rotate(-1.5deg);
+    filter: brightness(1);
+  }
+  20% {
+    transform: scale(1.06, 1.14) rotate(1.5deg);
+    filter: brightness(1.18);
+  }
+  45% {
+    transform: scale(0.95, 1.04) rotate(-2deg) translateX(-0.5px);
+    filter: brightness(0.92);
+  }
+  70% {
+    transform: scale(1.05, 1.1) rotate(2deg) translateX(0.5px);
+    filter: brightness(1.12);
+  }
+}
+
 /* ── 모션 최소화: 우주 배경·궤도·발광·등장 모두 정지 ── */
 @media (prefers-reduced-motion: reduce) {
   .orbit-star--tw,
   .orbit-ring--spin,
-  .orbit-planet-glow--pulse {
+  .orbit-planet-glow--pulse,
+  .orbit-flame {
     animation: none !important;
   }
   .orbit-rise,

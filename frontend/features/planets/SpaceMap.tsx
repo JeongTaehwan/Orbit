@@ -27,15 +27,15 @@ const OrbitScene = dynamic(() => import("./OrbitScene"), {
  */
 const MAP_HEIGHT_CLASS = "h-[82vh] min-h-[560px]";
 
-// 통계 타일
-function Stat({ label, value, delay }: { label: string; value: number; delay: number }) {
+// 보조 통계 칩 — 스트릭(hero)보다 작고 담백하게. 위계를 만든다.
+function MiniStat({ label, value, delay }: { label: string; value: number; delay: number }) {
   return (
     <div
-      className="orbit-rise flex flex-1 flex-col items-center rounded-lg border border-border bg-surface px-4 py-3"
+      className="orbit-rise flex flex-col items-center justify-center rounded-lg border border-border bg-surface/60 px-3 py-2"
       style={{ ["--rise-delay" as string]: `${delay}s` }}
     >
-      <span className="text-2xl font-semibold text-fg">{value}</span>
-      <span className="text-xs text-fg-muted">{label}</span>
+      <span className="text-lg font-semibold text-fg">{value}</span>
+      <span className="text-[11px] text-fg-muted">{label}</span>
     </div>
   );
 }
@@ -107,12 +107,19 @@ export function SpaceMap() {
           </Text>
         </div>
 
-        {/* 통계 */}
-        <div className="mb-8 flex flex-wrap gap-3">
-          {streak && <StreakCard streak={streak} delay={0} />}
-          <Stat label="행성" value={planets.length} delay={0.05} />
-          <Stat label="총 기록" value={totalRecords} delay={0.1} />
-          <Stat label="완성" value={completed} delay={0.15} />
+        {/* 통계 — 스트릭을 핵심(hero)으로 강조하고 나머지는 보조 칩으로 */}
+        <div className="mb-8 grid gap-3 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+          {streak ? (
+            <StreakCard streak={streak} />
+          ) : (
+            // 스트릭 조회 실패 시엔 자리만 비우고 보조 칩을 왼쪽으로
+            <div className="hidden sm:block" />
+          )}
+          <div className="grid grid-cols-3 gap-2">
+            <MiniStat label="행성" value={planets.length} delay={0.05} />
+            <MiniStat label="총 기록" value={totalRecords} delay={0.1} />
+            <MiniStat label="완성" value={completed} delay={0.15} />
+          </div>
         </div>
 
         {error && (

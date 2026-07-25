@@ -24,9 +24,16 @@ function Anchor({ children, ...props }: AnchorProps) {
   );
 }
 
-export function MarkdownContent({ content }: { content: string }) {
+// size="doc" — 기록 읽기 페이지처럼 크게 읽히는 문서용 (본문·이미지 확대)
+export function MarkdownContent({
+  content,
+  size = "default",
+}: {
+  content: string;
+  size?: "default" | "doc";
+}) {
   return (
-    <div className="orbit-markdown">
+    <div className={`orbit-markdown ${size === "doc" ? "orbit-markdown--doc" : ""}`}>
       <Markdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeHighlight]}

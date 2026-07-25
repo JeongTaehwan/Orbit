@@ -2,17 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { FileText, PenLine } from "lucide-react";
 import { Badge, Button, Container, Heading, Text } from "@usetaehwan/ui";
 import { Header } from "@/components/Header";
+import { TransitionLink } from "@/components/TransitionLink";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { useRequireAuth } from "@/features/auth";
 import { PlanetShowcase } from "@/features/planets/PlanetShowcase";
-import { RecordDrawer } from "@/features/records/RecordDrawer";
 import { api } from "@/lib/api";
 import { cachePlanet, getCachedPlanet } from "@/lib/planetCache";
 import type { Planet as PlanetType } from "@/types/planet";
 import { useAnimatedNumber } from "@/lib/hooks/useAnimatedNumber";
-import { difficultyDescription, difficultyLabel } from "@/lib/utils/difficulty";
+import { difficultyDescription, difficultyLabel, requiredRecords } from "@/lib/utils/difficulty";
 import { stageName } from "@/lib/utils/progress";
 
 export function PlanetDetail({ planetId }: { planetId: number }) {
@@ -22,15 +23,6 @@ export function PlanetDetail({ planetId }: { planetId: number }) {
   const [planet, setPlanet] = useState<PlanetType | null>(() => getCachedPlanet(planetId));
   const [loading, setLoading] = useState(() => getCachedPlanet(planetId) === null);
   const [error, setError] = useState<string | null>(null);
-
-  // 기록 UI 는 우측 드로어 하나로 통합 (목록/작성/읽기). 행성은 가리지 않는다.
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerMode, setDrawerMode] = useState<"list" | "compose">("list");
-
-  function openDrawer(mode: "list" | "compose") {
-    setDrawerMode(mode);
-    setDrawerOpen(true);
-  }
 
   // 진행도는 부드럽게 보간 (숫자/바/행성 모두 이 값으로)
   const shownProgress = useAnimatedNumber(planet?.progress ?? 0);
@@ -65,11 +57,14 @@ export function PlanetDetail({ planetId }: { planetId: number }) {
     }
   }
 
+  const recordsHref = `/planets/${planetId}/records`;
+
   return (
-    <main className="py-8">
-      <Container size="sm">
+    <main className="min-h-dvh py-8">
+      {/* 폭은 우주 지도(메인)와 동일하게 lg */}
+      <Container size="lg">
         {/* 헤더 (로고 클릭 → 우주 지도) */}
-        <Header className="mb-8" />
+        <Header className="mb-6" />
 
         {authLoading || loading ? (
           <Text variant="muted">불러오는 중…</Text>
@@ -78,7 +73,8 @@ export function PlanetDetail({ planetId }: { planetId: number }) {
             {error}
           </Text>
         ) : planet ? (
-          <div className="flex flex-col items-center text-center">
+          // 세로 가운데 정렬 — 상단에만 몰리지 않게 남는 높이를 위아래로 나눈다
+          <div className="flex min-h-[calc(100dvh-8rem)] flex-col items-center justify-center text-center">
             {/* 주인공: 큰 행성 (궤도 링 + 발광) */}
             <div className="orbit-rise">
               <PlanetShowcase
@@ -90,9 +86,9 @@ export function PlanetDetail({ planetId }: { planetId: number }) {
               />
             </div>
 
-            {/* 이름/유형/단계 + 유형 설명 한 줄 */}
+            {/* 이름/유형/단계 */}
             <div
-              className="orbit-rise mt-6 flex flex-col items-center gap-2"
+              className="orbit-rise mt-4 flex flex-col items-center gap-2.5"
               style={{ ["--rise-delay" as string]: "0.06s" }}
             >
               <Heading level={1}>{planet.name}</Heading>
@@ -107,65 +103,62 @@ export function PlanetDetail({ planetId }: { planetId: number }) {
 
             {/* 진행도 */}
             <div
-              className="orbit-rise mt-5 w-full max-w-sm"
+              className="orbit-rise mt-6 w-full max-w-sm"
               style={{ ["--rise-delay" as string]: "0.12s" }}
             >
-              <div className="mb-1 flex justify-between text-sm text-fg-muted">
-                <span>진행도</span>
-                <span>{Math.round(shownProgress)}%</span>
+              <div className="mb-1.5 flex items-baseline justify-between text-sm">
+                <span className="text-fg-muted">진행도</span>
+                <span className="font-medium text-fg">{Math.round(shownProgress)}%</span>
               </div>
               <ProgressBar value={shownProgress} />
+              <Text variant="small" className="mt-2 text-fg-muted">
+                {planet.is_completed
+                  ? "테라포밍 완료 — 생명이 사는 행성이 되었습니다 🌍"
+                  : `기록 ${planet.record_count}개 · 완성까지 ${Math.max(
+                      0,
+                      requiredRecords(planet.difficulty) - planet.record_count,
+                    )}개 더`}
+              </Text>
             </div>
 
-            {planet.is_completed && (
-              <Text variant="small" className="mt-3 text-brand">
-                테라포밍 완료 — 생명이 사는 행성이 되었습니다 🌍
-              </Text>
-            )}
-
-            {/* 기록 작성 (드로어를 작성 모드로 연다) */}
+            {/* 기록 진입점 — 작성(주) + 목록(부) */}
             <div
-              className="orbit-rise mt-6"
+              className="orbit-rise mt-7 flex flex-col items-center gap-3"
               style={{ ["--rise-delay" as string]: "0.18s" }}
             >
-              <Button variant="primary" onClick={() => openDrawer("compose")}>
-                학습 기록 작성
-              </Button>
+              <TransitionLink href={`${recordsHref}/new`}>
+                <Button variant="primary">
+                  <span className="inline-flex items-center gap-1.5">
+                    <PenLine size={16} aria-hidden />
+                    학습 기록 작성
+                  </span>
+                </Button>
+              </TransitionLink>
+              <TransitionLink
+                href={recordsHref}
+                className="inline-flex items-center gap-1.5 text-sm text-fg-muted transition-colors hover:text-fg"
+              >
+                <FileText size={14} aria-hidden />
+                학습 기록 {planet.record_count}개 보기
+              </TransitionLink>
             </div>
+
             {error && (
-              <Text variant="small" as="p" className="mt-2 text-danger">
+              <Text variant="small" as="p" className="mt-3 text-danger">
                 {error}
               </Text>
             )}
 
-            {/* 기록 목록 (드로어를 목록 모드로 연다) */}
-            <button
-              onClick={() => openDrawer("list")}
-              className="orbit-rise mt-4 text-sm text-fg-muted hover:text-fg"
-              style={{ ["--rise-delay" as string]: "0.24s" }}
-            >
-              학습 기록 {planet.record_count}개 보기
-            </button>
-
             {/* 위험 액션은 눈에 띄지 않게 맨 아래로 */}
             <button
               onClick={handleDelete}
-              className="mt-12 text-xs text-fg-muted hover:text-danger"
+              className="mt-12 text-xs text-fg-muted transition-colors hover:text-danger"
             >
               이 행성 삭제
             </button>
           </div>
         ) : null}
       </Container>
-
-      {/* 기록 드로어 — 목록 · 작성 · 읽기 통합 */}
-      <RecordDrawer
-        planetId={planetId}
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        initialMode={drawerMode}
-        onChanged={loadPlanet}
-      />
     </main>
   );
 }
