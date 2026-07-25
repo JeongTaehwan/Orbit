@@ -35,8 +35,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    // 마운트 시 1회 조회. 세션 정리(cleanup)로 언마운트 후 setState 방지.
+    let active = true;
+    api
+      .me()
+      .then((u) => active && setUser(u))
+      .catch(() => active && setUser(null))
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, loading, refresh }}>

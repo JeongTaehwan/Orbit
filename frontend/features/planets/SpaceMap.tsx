@@ -79,7 +79,15 @@ export function SpaceMap() {
 
   // 로그인 확인된 뒤에만 내 행성을 불러온다.
   useEffect(() => {
-    if (user) load(planets.length === 0);
+    if (!user) return;
+    // effect 동기 구간에서 setState 하지 않도록 마이크로태스크로 넘긴다.
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (active) load(planets.length === 0);
+    });
+    return () => {
+      active = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 

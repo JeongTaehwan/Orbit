@@ -83,8 +83,16 @@ export function PlanetDetail({ planetId }: { planetId: number }) {
   }
 
   useEffect(() => {
-    // 캐시로 이미 그려졌으면 로딩 표시 없이 조용히 갱신
-    if (user) loadPlanet(getCachedPlanet(planetId) === null);
+    if (!user) return;
+    // effect 동기 구간에서 setState 하지 않도록 마이크로태스크로 넘긴다.
+    let active = true;
+    void Promise.resolve().then(() => {
+      // 캐시로 이미 그려졌으면 로딩 표시 없이 조용히 갱신
+      if (active) loadPlanet(getCachedPlanet(planetId) === null);
+    });
+    return () => {
+      active = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planetId, user]);
 
