@@ -9,6 +9,8 @@ import { useRequireAuth } from "@/features/auth";
 import { api } from "@/lib/api";
 import { cachePlanets, getCachedPlanets } from "@/lib/planetCache";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { OrbitLoader } from "@/components/ui/OrbitLoader";
 import { StreakCard } from "@/features/streak/StreakCard";
 import type { Planet } from "@/types/planet";
 import type { Streak } from "@/types/streak";
@@ -16,9 +18,14 @@ import { CreatePlanetForm } from "./CreatePlanetForm";
 
 // WebGL 은 브라우저에서만 동작한다 → 서버 렌더를 건너뛴다.
 // (dynamic ssr:false 는 클라이언트 컴포넌트 안에서만 쓸 수 있다)
+// 청크·WebGL 초기화 동안 테마 로더를 보여 준다.
 const OrbitScene = dynamic(() => import("./OrbitScene"), {
   ssr: false,
-  loading: () => null,
+  loading: () => (
+    <div className="flex h-full items-center justify-center">
+      <OrbitLoader size={48} label="행성계를 여는 중…" />
+    </div>
+  ),
 });
 
 /**
@@ -27,15 +34,15 @@ const OrbitScene = dynamic(() => import("./OrbitScene"), {
  */
 const MAP_HEIGHT_CLASS = "h-[82vh] min-h-[560px]";
 
-// 통계 타일
-function Stat({ label, value, delay }: { label: string; value: number; delay: number }) {
+// 보조 통계 칩 — 스트릭(hero)보다 작고 담백하게. 위계를 만든다.
+function MiniStat({ label, value, delay }: { label: string; value: number; delay: number }) {
   return (
     <div
-      className="orbit-rise flex flex-1 flex-col items-center rounded-lg border border-border bg-surface px-4 py-3"
+      className="orbit-rise flex flex-col items-center justify-center rounded-lg border border-border bg-surface/60 px-3 py-2"
       style={{ ["--rise-delay" as string]: `${delay}s` }}
     >
-      <span className="text-2xl font-semibold text-fg">{value}</span>
-      <span className="text-xs text-fg-muted">{label}</span>
+      <span className="text-lg font-semibold text-fg">{value}</span>
+      <span className="text-[11px] text-fg-muted">{label}</span>
     </div>
   );
 }
@@ -81,7 +88,9 @@ export function SpaceMap() {
     return (
       <main className="py-10">
         <Container size="lg">
-          <Text variant="muted">불러오는 중…</Text>
+          <div className="flex justify-center py-24">
+            <OrbitLoader size={48} />
+          </div>
         </Container>
       </main>
     );
@@ -107,12 +116,19 @@ export function SpaceMap() {
           </Text>
         </div>
 
-        {/* 통계 */}
-        <div className="mb-8 flex flex-wrap gap-3">
-          {streak && <StreakCard streak={streak} delay={0} />}
-          <Stat label="행성" value={planets.length} delay={0.05} />
-          <Stat label="총 기록" value={totalRecords} delay={0.1} />
-          <Stat label="완성" value={completed} delay={0.15} />
+        {/* 통계 — 스트릭을 핵심(hero)으로 강조하고 나머지는 보조 칩으로 */}
+        <div className="mb-8 grid gap-3 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+          {streak ? (
+            <StreakCard streak={streak} />
+          ) : (
+            // 스트릭 조회 실패 시엔 자리만 비우고 보조 칩을 왼쪽으로
+            <div className="hidden sm:block" />
+          )}
+          <div className="grid grid-cols-3 gap-2">
+            <MiniStat label="행성" value={planets.length} delay={0.05} />
+            <MiniStat label="총 기록" value={totalRecords} delay={0.1} />
+            <MiniStat label="완성" value={completed} delay={0.15} />
+          </div>
         </div>
 
         {error && (
@@ -123,9 +139,22 @@ export function SpaceMap() {
 
         {/* 궤도 지도 — 통계와 확실히 떼어 놓는다 */}
         {loading ? (
-          <Text variant="muted">불러오는 중…</Text>
+          <div className="flex justify-center py-24">
+            <OrbitLoader size={48} label="우주를 그리는 중…" />
+          </div>
         ) : planets.length === 0 ? (
-          <Text variant="muted">아직 행성이 없습니다. “새 행성 만들기”로 시작해 보세요.</Text>
+          <div className="flex min-h-[46vh] items-center justify-center">
+            <EmptyState
+              icon="🪐"
+              title="아직 학습 행성이 없어요"
+              description="첫 학습 행성을 만들어 테라포밍을 시작해보세요. 기록을 쌓을수록 행성이 자라납니다."
+              action={
+                <Button variant="primary" onClick={() => setModalOpen(true)}>
+                  첫 행성 만들기
+                </Button>
+              }
+            />
+          </div>
         ) : (
           <Text variant="muted">끌어서 둘러보고, 휠로 확대·축소할 수 있어요.</Text>
         )}

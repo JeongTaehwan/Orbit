@@ -22,9 +22,20 @@ interface SceneProps {
   difficulty: Difficulty;
   size: number;
   spinning: boolean;
+  /** 완성 축하 연출 재생 중 */
+  celebrating?: boolean;
+  /** 행성별 seed (대륙·색조 변형) */
+  seed?: number;
 }
 
-export default function PlanetScene({ progress, difficulty, size, spinning }: SceneProps) {
+export default function PlanetScene({
+  progress,
+  difficulty,
+  size,
+  spinning,
+  celebrating = false,
+  seed = 0,
+}: SceneProps) {
   return (
     <Canvas
       // dpr 상한 — 레티나에서 픽셀 수가 4배로 뛰는 걸 막는다
@@ -32,8 +43,8 @@ export default function PlanetScene({ progress, difficulty, size, spinning }: Sc
       // 거리 4.6 / fov 32 → 화면 반높이 1.32 (행성 반지름 1).
       // 행성 바깥에 여백을 남겨야 대기 헤일로가 0 으로 사라질 자리가 생긴다.
       camera={{ position: [0, 0, 4.6], fov: 32 }}
-      // 자전하지 않을 땐 "demand": 바뀔 때만 그리고 평소엔 GPU 를 쉬게 한다
-      frameloop={spinning ? "always" : "demand"}
+      // 자전 또는 축하 연출 중엔 매 프레임 그린다. 평소엔 GPU 를 쉬게 한다.
+      frameloop={spinning || celebrating ? "always" : "demand"}
       // 톤매핑 끔: 기본값(ACES)은 사진처럼 밝은 색을 눌러 색을 살짝 바꾼다.
       gl={{ antialias: true, alpha: true, toneMapping: THREE.NoToneMapping }}
       style={{ width: size, height: size }}
@@ -47,6 +58,8 @@ export default function PlanetScene({ progress, difficulty, size, spinning }: Sc
         difficulty={difficulty}
         segments={sphereSegments(size)}
         spinning={spinning}
+        celebrating={celebrating}
+        seed={seed}
       />
     </Canvas>
   );

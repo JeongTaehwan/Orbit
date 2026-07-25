@@ -19,6 +19,15 @@ interface Props {
   size?: number;
   /** 확대 전환용 view-transition-name (우주 지도의 같은 이름 행성과 모핑) */
   viewTransitionName?: string;
+  /** 완성 축하 연출 재생 중 (빛 발산 + 별가루 + 배경 후광) */
+  celebrating?: boolean;
+  /** 행성별 seed(보통 행성 id) — 대륙·색조를 조금씩 다르게 */
+  seed?: number;
+  /**
+   * 기록 반영 펄스 — 진행도가 오르면 행성이 살짝 번쩍인다.
+   * token 이 바뀔 때마다 다시 재생(remount). kind="stage" 는 단계 경계용(더 큼).
+   */
+  pulse?: { kind: "soft" | "stage"; token: number } | null;
 }
 
 export function PlanetShowcase({
@@ -27,6 +36,9 @@ export function PlanetShowcase({
   isCompleted,
   size = 260,
   viewTransitionName,
+  celebrating = false,
+  seed = 0,
+  pulse = null,
 }: Props) {
   const p = Math.min(100, Math.max(0, progress));
   // 발광 세기: 진행도 0.15 → 0.55 로 증가, 완성이면 최대
@@ -67,6 +79,20 @@ export function PlanetShowcase({
         style={{ ["--glow" as string]: glow, ["--glow-color" as string]: glowColor }}
       />
 
+      {/* 축하 후광 — 완성 순간 뒤에서 확 번졌다 사그라드는 배경 빛 (1회) */}
+      {celebrating && (
+        <div className="orbit-celebrate-halo" style={{ ["--glow-color" as string]: glowColor }} />
+      )}
+
+      {/* 기록 반영 펄스 — 진행도가 오를 때 살짝 번쩍 (token 마다 remount 해 재생) */}
+      {pulse && (
+        <div
+          key={pulse.token}
+          className={`orbit-pulse-halo ${pulse.kind === "stage" ? "orbit-pulse-halo--stage" : ""}`}
+          style={{ ["--glow-color" as string]: glowColor }}
+        />
+      )}
+
       {/* 행성 본체 (링·발광 위로).
           3D 는 대기 헤일로가 번질 자리를 남기려고 카메라를 물려 두어서, 같은 px 박스면
           구체가 작게 보인다. 그만큼 박스를 키워 링·발광과의 크기 비율을 맞춘다. */}
@@ -74,7 +100,14 @@ export function PlanetShowcase({
         className="relative z-10"
         style={viewTransitionName ? { viewTransitionName } : undefined}
       >
-        <Planet3D progress={p} difficulty={difficulty} size={box} animate />
+        <Planet3D
+          progress={p}
+          difficulty={difficulty}
+          size={box}
+          animate
+          celebrating={celebrating}
+          seed={seed}
+        />
       </div>
     </div>
   );

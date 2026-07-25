@@ -97,7 +97,7 @@ describe("SpaceMap", () => {
   it("행성이 없으면 안내 문구를 보여준다", async () => {
     mockedApi.listPlanets.mockResolvedValue([]);
     render(<SpaceMap />);
-    expect(await screen.findByText(/아직 행성이 없습니다/)).toBeInTheDocument();
+    expect(await screen.findByText(/아직 학습 행성이 없어요/)).toBeInTheDocument();
   });
 
   it("통계 영역에 스트릭을 함께 보여준다", async () => {

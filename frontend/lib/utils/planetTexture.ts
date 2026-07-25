@@ -29,15 +29,22 @@ function rng(seed: number): () => number {
   };
 }
 
-// 난이도당 1장만 만들어 재사용 (지도에 행성이 여러 개 떠도 마스크는 3장뿐)
-const cache = new Map<Difficulty, HTMLCanvasElement>();
+// (난이도, variant) 조합마다 1장 만들어 재사용. variant=행성 id 라 행성마다 다른 대륙.
+const cache = new Map<string, HTMLCanvasElement>();
 
 /**
  * 대륙 = 흰색, 바다 = 검정인 마스크 캔버스.
+ *
+ * variant(행성별 seed, 보통 행성 id)를 섞어 같은 난이도여도 대륙 배치·개수가 달라진다.
+ * variant 0 은 난이도 기본 배치(프리뷰·기본값이 기존 그대로 보이도록).
  * 브라우저가 아닌 환경(테스트 등)에서 2D 컨텍스트를 못 얻으면 null.
  */
-export function createLandMask(difficulty: Difficulty): HTMLCanvasElement | null {
-  const cached = cache.get(difficulty);
+export function createLandMask(
+  difficulty: Difficulty,
+  variant = 0,
+): HTMLCanvasElement | null {
+  const key = `${difficulty}:${variant}`;
+  const cached = cache.get(key);
   if (cached) return cached;
 
   const canvas = document.createElement("canvas");
@@ -49,11 +56,14 @@ export function createLandMask(difficulty: Difficulty): HTMLCanvasElement | null
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-  const rand = rng(SEED[difficulty]);
+  // 난이도 seed 에 행성별 variant 를 섞는다 (variant 0 이면 난이도 seed 그대로)
+  const seed = variant === 0 ? SEED[difficulty] : (SEED[difficulty] ^ Math.imul(variant, 0x85ebca6b)) >>> 0;
+  const rand = rng(seed);
   ctx.fillStyle = "#fff";
 
-  // 대륙 5덩어리 — 각 덩어리는 원 여러 개를 겹쳐 울퉁불퉁하게 만든다
-  for (let i = 0; i < 5; i++) {
+  // 대륙 덩어리 수도 행성마다 다르게 (variant 0 은 기존과 같은 5덩어리)
+  const continents = variant === 0 ? 5 : 4 + Math.floor(rand() * 4); // 4~7
+  for (let i = 0; i < continents; i++) {
     const cx = rand() * WIDTH;
     // 위도 25~75% 구간 = 적도 주변 (극지방 왜곡을 피한다)
     const cy = HEIGHT * (0.25 + rand() * 0.5);
@@ -73,7 +83,7 @@ export function createLandMask(difficulty: Difficulty): HTMLCanvasElement | null
     }
   }
 
-  cache.set(difficulty, canvas);
+  cache.set(key, canvas);
   return canvas;
 }
 

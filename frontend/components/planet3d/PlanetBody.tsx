@@ -43,15 +43,15 @@ export function useToonGradient(steps = 4): THREE.DataTexture {
   }, [steps]);
 }
 
-/** 코드로 그린 대륙 마스크를 three 텍스처로 감싼다 (난이도가 바뀔 때만 새로 만듦) */
-function useLandMask(difficulty: Difficulty): THREE.CanvasTexture | null {
+/** 코드로 그린 대륙 마스크를 three 텍스처로 감싼다 (난이도·seed 가 바뀔 때만 새로 만듦) */
+function useLandMask(difficulty: Difficulty, seed: number): THREE.CanvasTexture | null {
   const texture = useMemo(() => {
-    const canvas = createLandMask(difficulty);
+    const canvas = createLandMask(difficulty, seed);
     if (!canvas) return null;
     const t = new THREE.CanvasTexture(canvas);
     t.colorSpace = THREE.NoColorSpace; // 색이 아니라 '값'이므로 색공간 변환을 하지 않는다
     return t;
-  }, [difficulty]);
+  }, [difficulty, seed]);
 
   // GPU 메모리는 자동으로 회수되지 않는다 — 언마운트 시 직접 반납
   useEffect(() => () => texture?.dispose(), [texture]);
@@ -80,6 +80,10 @@ export interface PlanetBodyProps {
   spinning: boolean;
   /** 반지름 배율 (기본 1 = 반지름 1) */
   scale?: number;
+  /** 완성 축하 연출(빛 발산 + 파티클). 상승 엣지에 한 번 재생된다. */
+  celebrating?: boolean;
+  /** 행성별 seed(보통 행성 id) — 대륙 배치·색조를 조금씩 다르게 한다 */
+  seed?: number;
 }
 
 export function PlanetBody({
@@ -88,11 +92,16 @@ export function PlanetBody({
   segments,
   spinning,
   scale = 1,
+  celebrating = false,
+  seed = 0,
 }: PlanetBodyProps) {
   const spinRef = useRef<THREE.Group>(null);
-  const visual = useMemo(() => planetVisual(progress, difficulty), [progress, difficulty]);
+  const visual = useMemo(
+    () => planetVisual(progress, difficulty, seed),
+    [progress, difficulty, seed],
+  );
   const gradientMap = useToonGradient();
-  const landMask = useLandMask(difficulty);
+  const landMask = useLandMask(difficulty, seed);
   const glowTexture = useGlowTexture();
 
   // useFrame: 매 프레임(보통 초당 60회) 호출되는 콜백.
@@ -166,7 +175,157 @@ export function PlanetBody({
           />
         </mesh>
       )}
+
+      {/* 완성 축하: 빛 발산 + 별가루 (celebrating 상승 엣지에 한 번 재생) */}
+      <CelebrationFX celebrating={celebrating} color={visual.atmosphere} segments={segments} />
     </group>
+  );
+}
+
+/** 별가루 개수 — 과하지 않게 절제 */
+const PARTICLE_COUNT = 90;
+/** 연출 길이(초) */
+const FX_LIFETIME = 2.2;
+
+/** 결정적 난수기 (mulberry32) — 렌더를 순수하게 유지하려고 Math.random 대신 쓴다 */
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * 완성 축하 3D 이펙트 — 확 빛나는 플레어 + 바깥으로 퍼지는 별가루.
+ *
+ * celebrating 이 false→true 로 바뀌는 순간 시작해, 프레임 시간(age)으로 스스로
+ * 재생·정리한다. React state 를 매 프레임 건드리지 않도록 three 객체·버퍼를 직접 쓴다.
+ */
+function CelebrationFX({
+  celebrating,
+  color,
+  segments,
+}: {
+  celebrating: boolean;
+  color: string;
+  segments: number;
+}) {
+  const flareRef = useRef<THREE.Mesh>(null);
+  const pointsRef = useRef<THREE.Points>(null);
+  const age = useRef<number>(Infinity); // Infinity = 대기(정지)
+  const wasCelebrating = useRef(false);
+
+  // 방향·속도를 미리 계산 (구면에 고르게 흩뿌린 별가루).
+  // 결정적 PRNG 를 써서 렌더가 순수하고(매번 같은 배치) 재현 가능하다.
+  const { positions, dirs, speeds } = useMemo(() => {
+    const rand = mulberry32(0x5eed);
+    const positions = new Float32Array(PARTICLE_COUNT * 3);
+    const dirs = new Float32Array(PARTICLE_COUNT * 3);
+    const speeds = new Float32Array(PARTICLE_COUNT);
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      // 구면 균등 분포
+      const u = rand() * 2 - 1;
+      const theta = rand() * Math.PI * 2;
+      const s = Math.sqrt(1 - u * u);
+      dirs[i * 3] = s * Math.cos(theta);
+      dirs[i * 3 + 1] = s * Math.sin(theta);
+      dirs[i * 3 + 2] = u;
+      speeds[i] = 0.9 + rand() * 1.3;
+    }
+    return { positions, dirs, speeds };
+  }, []);
+
+  useEffect(() => {
+    // 버퍼는 R3F 가 언마운트 시 자동 dispose (JSX primitive)
+    const dirsBuf = dirs;
+    return () => void dirsBuf;
+  }, [dirs]);
+
+  useFrame((_, delta) => {
+    // 상승 엣지에서 시작
+    if (celebrating && !wasCelebrating.current) age.current = 0;
+    wasCelebrating.current = celebrating;
+
+    const flare = flareRef.current;
+    const pts = pointsRef.current;
+    if (age.current === Infinity) {
+      if (flare) flare.visible = false;
+      if (pts) pts.visible = false;
+      return;
+    }
+
+    age.current += delta;
+    const t = age.current / FX_LIFETIME;
+    if (t >= 1) {
+      age.current = Infinity; // 정리 — 다음 프레임에 숨김
+      return;
+    }
+
+    // 플레어: 행성 자체가 확 밝아지는 플래시.
+    // 캔버스(정사각형) 반높이가 1.32 뿐이라, 구체가 그걸 넘으면 사각형으로 잘린다.
+    // 그래서 크기는 1.14 이하로 가둬 캔버스 안에 두고, 밝기(opacity)로만 번쩍인다.
+    // '바깥으로 퍼지는 둥근 빛'은 캔버스 밖 DOM 후광(orbit-celebrate-halo)이 맡는다.
+    if (flare) {
+      flare.visible = true;
+      const rise = Math.min(1, t / 0.18);
+      const fall = Math.max(0, 1 - (t - 0.18) / 0.82);
+      const mat = flare.material as THREE.MeshBasicMaterial;
+      mat.opacity = 0.8 * rise * fall;
+      flare.scale.setScalar(1.05 + t * 0.09);
+    }
+
+    // 별가루: 바깥으로 퍼지며 감속(easeOut), 서서히 사라진다.
+    // 캔버스 반높이(1.32)를 넘으면 사각형 경계에서 뚝 잘리므로, 최대 반경을
+    // 그 안(1.3)으로 가둔다. 더 멀리 퍼지는 느낌은 DOM 후광이 대신 낸다.
+    if (pts) {
+      pts.visible = true;
+      const ease = 1 - Math.pow(1 - t, 3);
+      const arr = pts.geometry.attributes.position.array as Float32Array;
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        const r = 1.02 + speeds[i] * ease * 0.13; // 최대 ~1.3, 캔버스 안
+        arr[i * 3] = dirs[i * 3] * r;
+        arr[i * 3 + 1] = dirs[i * 3 + 1] * r;
+        arr[i * 3 + 2] = dirs[i * 3 + 2] * r;
+      }
+      pts.geometry.attributes.position.needsUpdate = true;
+      const mat = pts.material as THREE.PointsMaterial;
+      mat.opacity = (t < 0.12 ? t / 0.12 : 1) * (1 - t); // 반짝 켜졌다 서서히 꺼짐
+    }
+  });
+
+  return (
+    <>
+      {/* 확 빛나는 플레어 — 행성을 감싸는 밝은 구 (더하기 합성) */}
+      <mesh ref={flareRef} visible={false} scale={1.1} raycast={() => null}>
+        <sphereGeometry args={[1, segments, segments / 2]} />
+        <meshBasicMaterial
+          color={color}
+          transparent
+          opacity={0}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* 별가루 */}
+      <points ref={pointsRef} visible={false} raycast={() => null}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        </bufferGeometry>
+        <pointsMaterial
+          color={color}
+          size={0.07}
+          sizeAttenuation
+          transparent
+          opacity={0}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
+      </points>
+    </>
   );
 }
 

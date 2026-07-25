@@ -30,6 +30,11 @@ interface Props {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
+  /**
+   * 부모가 준 세로 공간을 꽉 채운다 (작성 페이지).
+   * 입력창은 늘어나지 않고 높이를 고정한 채 내부 스크롤, 미리보기도 같은 높이.
+   */
+  fill?: boolean;
 }
 
 type Tab = "write" | "preview";
@@ -39,7 +44,7 @@ function altFromFilename(name: string): string {
   return name.replace(/\.[^.]+$/, "").trim() || "이미지";
 }
 
-export function MarkdownEditor({ value, onChange, placeholder }: Props) {
+export function MarkdownEditor({ value, onChange, placeholder, fill = false }: Props) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [tab, setTab] = useState<Tab>("write"); // 좁은 화면에서만 의미
@@ -135,7 +140,7 @@ export function MarkdownEditor({ value, onChange, placeholder }: Props) {
     "rounded-md p-1.5 text-fg-muted transition-colors hover:bg-brand-subtle hover:text-brand disabled:cursor-not-allowed disabled:opacity-40";
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className={`flex flex-col gap-2 ${fill ? "h-full" : ""}`}>
       {/* 툴바 + (좁은 화면용) 탭 */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-0.5">
@@ -197,14 +202,22 @@ export function MarkdownEditor({ value, onChange, placeholder }: Props) {
         </div>
       </div>
 
-      <div className="md:grid md:grid-cols-2 md:gap-4">
+      <div
+        className={`md:grid md:grid-cols-2 md:gap-4 ${
+          fill ? "flex min-h-0 flex-1 flex-col md:grid-rows-1" : ""
+        }`}
+      >
         {/* 작성 (어두운 톤) */}
-        <div className={`${tab === "write" ? "flex" : "hidden"} flex-col md:flex`}>
+        <div
+          className={`${tab === "write" ? "flex" : "hidden"} flex-col md:flex ${
+            fill ? "min-h-0 flex-1" : ""
+          }`}
+        >
           <div className="mb-1.5 hidden items-center gap-1.5 text-xs font-medium text-fg-muted md:flex">
             <Pencil size={13} aria-hidden /> 작성
           </div>
           <div
-            className="relative"
+            className={`relative ${fill ? "min-h-0 flex-1" : ""}`}
             onDragOver={handleDragOver}
             onDragLeave={() => setDragging(false)}
             onDrop={handleDrop}
@@ -217,9 +230,10 @@ export function MarkdownEditor({ value, onChange, placeholder }: Props) {
               placeholder={placeholder ?? "마크다운으로 학습 내용을 기록하세요…"}
               aria-label="마크다운 입력"
               aria-busy={uploading}
-              className={`h-72 w-full resize-y rounded-lg border bg-bg p-3 font-mono text-sm text-fg outline-none transition-colors focus:border-brand ${
-                dragging ? "border-brand" : "border-border"
-              }`}
+              // fill: 늘어나지 않게 높이 고정 + 내부 스크롤. 기본: h-72 + 세로 리사이즈.
+              className={`w-full rounded-lg border bg-bg p-3 font-mono text-sm text-fg outline-none transition-colors focus:border-brand ${
+                fill ? "h-full resize-none" : "h-72 resize-y"
+              } ${dragging ? "border-brand" : "border-border"}`}
             />
             {/* 드래그 중 안내 — 클릭을 가로채지 않도록 pointer-events-none */}
             {dragging && !uploading && (
@@ -250,14 +264,20 @@ export function MarkdownEditor({ value, onChange, placeholder }: Props) {
           )}
         </div>
 
-        {/* 미리보기 (밝은 톤 — 실제 렌더 결과) */}
-        <div className={`${tab === "preview" ? "flex" : "hidden"} flex-col md:flex`}>
+        {/* 미리보기 (밝은 톤 — 실제 렌더 결과) — 작성창과 같은 높이 */}
+        <div
+          className={`${tab === "preview" ? "flex" : "hidden"} flex-col md:flex ${
+            fill ? "min-h-0 flex-1" : ""
+          }`}
+        >
           <div className="mb-1.5 hidden items-center gap-1.5 text-xs font-medium text-fg-muted md:flex">
             <Eye size={13} aria-hidden /> 미리보기
           </div>
           <div
             aria-label="미리보기"
-            className="h-72 overflow-y-auto rounded-lg border border-brand-subtle bg-surface p-3"
+            className={`overflow-y-auto rounded-lg border border-brand-subtle bg-surface p-3 ${
+              fill ? "min-h-0 flex-1" : "h-72"
+            }`}
           >
             {value.trim() ? (
               <MarkdownContent content={value} />
