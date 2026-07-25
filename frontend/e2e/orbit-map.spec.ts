@@ -229,7 +229,9 @@ test("도착 후 상세로 넘어갈 때 화면 전환이 걸린다", async ({ p
   expect(calls).toBe(1);
 });
 
-test("다이브 막판에 구름이 화면을 완전히 덮었다가 갈라진다", async ({ page }) => {
+test("구름이 화면을 완전히 덮은 뒤 상세로 넘어간다 (줌된 지도가 먼저 보이지 않음)", async ({
+  page,
+}) => {
   await page.goto("/");
   await page.waitForSelector(".orbit-map-label", { timeout: 30_000 });
   await page.waitForTimeout(800);
@@ -237,53 +239,34 @@ test("다이브 막판에 구름이 화면을 완전히 덮었다가 갈라진�
   const target = await page.evaluate(() => {
     const el = document.querySelector(".orbit-map-label") as HTMLElement;
     const r = el.getBoundingClientRect();
-    return { x: r.x + r.width / 2, y: r.y - 26 };
+    return { href: el.getAttribute("href"), x: r.x + r.width / 2, y: r.y - 26 };
   });
 
   await page.mouse.click(target.x, target.y);
 
-  // 다이브 내내 구름 상태를 촘촘히 기록한다 (스크린샷은 타이밍을 못 맞춘다)
-  const samples = await page.evaluate(
-    () =>
-      new Promise<{ t: number; op: number; bg: string; shift: number; w: number; h: number }[]>(
-        (resolve) => {
-          const out: { t: number; op: number; bg: string; shift: number; w: number; h: number }[] = [];
-          const t0 = performance.now();
-          const tick = () => {
-            const v = document.querySelector(".orbit-dive-veil") as HTMLElement | null;
-            if (v) {
-              const cs = getComputedStyle(v);
-              const r = v.getBoundingClientRect();
-              const cloud = document.querySelector(".orbit-dive-cloud") as HTMLElement | null;
-              out.push({
-                t: Math.round(performance.now() - t0),
-                op: Number(cs.opacity),
-                bg: cs.backgroundColor.replace(/\s/g, ""),
-                shift: Math.abs(
-                  Number(/translate3d\((-?[\d.]+)%/.exec(cloud?.style.transform ?? "")?.[1] ?? 0),
-                ),
-                w: Math.round(r.width),
-                h: Math.round(r.height),
-              });
-            }
-            if (performance.now() - t0 < 1000) setTimeout(tick, 30);
-            else resolve(out);
-          };
-          tick();
-        },
-      ),
-  );
+  // 이동이 일어난 시점에 화면이 '완전히 흰 구름'으로 덮여 있어야 한다.
+  // 갈라지며 지도 행성이 먼저 드러나면(이전 버그) 이동 시점의 커버가 깨진다.
+  let coveredAtNav = false;
+  for (let i = 0; i < 40; i++) {
+    const state = await page.evaluate(() => {
+      const v = document.querySelector(".orbit-dive-veil") as HTMLElement | null;
+      if (!v) return { gone: true, covered: false };
+      const cs = getComputedStyle(v);
+      const r = v.getBoundingClientRect();
+      const full =
+        Number(cs.opacity) > 0.98 &&
+        /^rgb\(/.test(cs.backgroundColor.replace(/\s/g, "")) &&
+        r.width >= window.innerWidth &&
+        r.height >= window.innerHeight;
+      return { gone: false, covered: full };
+    });
+    if (state.covered) coveredAtNav = true;
+    if (state.gone) break; // OrbitScene 언마운트 = 이동 완료
+    await page.waitForTimeout(25);
+  }
+  expect(coveredAtNav).toBe(true);
 
-  const vw = page.viewportSize()!;
-
-  // 완전히 덮인 순간이 있어야 한다: 뷰포트 전체 크기 + opacity 1 + 불투명 배경
-  const covered = samples.filter(
-    (s) => s.op === 1 && /^rgb\(/.test(s.bg) && s.w >= vw.width && s.h >= vw.height,
-  );
-  expect(covered.length).toBeGreaterThan(0);
-
-  // 그 뒤에 좌우로 갈라진다
-  const lastCovered = covered[covered.length - 1];
-  const parted = samples.filter((s) => s.t > lastCovered.t && s.shift > 20);
-  expect(parted.length).toBeGreaterThan(0);
+  // 그리고 실제로 상세로 도착한다
+  await page.waitForURL(`**${target.href}`, { timeout: 10_000 });
+  expect(page.url()).toContain(target.href!);
 });

@@ -146,8 +146,18 @@ const HOVER_SCALE = 1.22;
 /** 행성으로 날아 들어가는 시간(초) */
 const DIVE_SEC = 1.05;
 
-/** 구름을 헤집기 시작하는 지점 (다이브 진행도 0~1) — 행성에 거의 닿았을 때 */
-const CLOUD_FROM = 0.55;
+/** 구름이 몰려들기 시작하는 지점 (다이브 진행도 0~1) — 행성에 거의 닿았을 때 */
+const CLOUD_FROM = 0.5;
+
+/**
+ * 구름이 화면을 완전히 덮는 지점 (다이브 진행도 0~1).
+ *
+ * 이 순간 상세로 넘어간다. 화면 전환(View Transition)이 '완전히 흰' 상태를
+ * 스냅샷으로 잡은 뒤 상세로 크로스페이드하므로, 구름이 걷히며 드러나는 것은
+ * 줌된 지도 행성이 아니라 상세 화면이 된다.
+ * (여기서 넘기지 않고 다이브 끝까지 두면 구름이 갈라지며 지도 행성이 먼저 보인다)
+ */
+const COVER_AT = 0.82;
 
 /** 도착 지점 — 행성 반지름의 몇 배 앞까지 다가갈지 (작을수록 화면을 꽉 채운다) */
 const DIVE_STOP = 2.5;
@@ -289,30 +299,25 @@ function OrbitMotion({
       camera.lookAt(group.position);
     }
 
-    // ── 구름 헤집기: 막판에 좌우로 갈라지며 화면을 덮는다 ──
-    // 0 → 1 로 가는 동안 두 덩이가 서로 반대로 밀려나고, 그만큼 하얘진다.
-    const c = Math.max(0, (d.t - CLOUD_FROM) / (1 - CLOUD_FROM));
+    // ── 구름이 몰려들어 화면을 덮는다 ──
+    // CLOUD_FROM → COVER_AT 동안 뿌옇게 짙어지고, 두 덩이가 커지며 다가온다.
+    // 좌우로 갈라내지 않는다 — 갈라짐(=상세 드러내기)은 화면 전환이 대신한다.
+    const c = Math.min(1, Math.max(0, (d.t - CLOUD_FROM) / (COVER_AT - CLOUD_FROM)));
     const veil = veilRef.current;
     if (veil) {
-      // 먼저 뿌옇게 감싸고(빠르게 짙어짐), 그 다음 좌우로 찢어지듯 갈라진다.
-      // 처음부터 벌어져 있으면 '헤집는' 느낌 없이 양옆에 구름이 스칠 뿐이다.
-      // 빠르게 짙어져(25%) 완전히 덮은 뒤, 절반 지점부터 갈라진다.
-      // 두 지점이 붙어 있으면 '완전히 덮인' 순간이 한 프레임밖에 없다.
-      veil.style.opacity = String(Math.min(1, c * 4));
-      const split = Math.max(0, (c - 0.5) / 0.5);
-      // 구름 덩이 사이 틈까지 메우는 바탕. 갈라질 때 함께 걷혀야 행성이 드러난다.
-      veil.style.backgroundColor = `rgba(244, 249, 255, ${(1 - split).toFixed(3)})`;
-      const push = 130 * split * split;
-      const grow = 1 + c * 0.9; // 다가올수록 커진다
+      veil.style.opacity = String(c);
+      // 구름 덩이 사이 틈까지 메워 완전히 불투명하게
+      veil.style.backgroundColor = `rgba(244, 249, 255, ${c.toFixed(3)})`;
+      const grow = 1 + c * 1.1; // 다가올수록 커진다
       const left = cloudLeftRef.current;
       const right = cloudRightRef.current;
-      if (left) left.style.transform = `translate3d(${-push}%, 0, 0) scale(${grow})`;
-      if (right) {
-        right.style.transform = `translate3d(${push}%, 0, 0) scale(${grow}) scaleX(-1)`;
-      }
+      if (left) left.style.transform = `scale(${grow})`;
+      if (right) right.style.transform = `scale(${grow}) scaleX(-1)`;
     }
 
-    if (d.t >= 1) {
+    // 완전히 덮인 순간 상세로. 화면 전환이 이 흰 화면을 스냅샷으로 잡아
+    // 상세와 크로스페이드하므로, 걷히며 나오는 것은 상세다.
+    if (d.t >= COVER_AT) {
       const arrived = d.index;
       dive.current = null;
       onArrive(arrived);
