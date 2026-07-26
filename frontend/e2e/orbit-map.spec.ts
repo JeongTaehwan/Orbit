@@ -15,7 +15,7 @@ const PLANETS = Array.from({ length: 4 }, (_, i) => ({
   created_at: "2026-01-01T00:00:00Z",
 }));
 
-const API = "http://localhost:8000";
+const API = "http://localhost:3000/api";
 
 test.beforeEach(async ({ page }) => {
   await page.route(`${API}/auth/me`, (r) =>

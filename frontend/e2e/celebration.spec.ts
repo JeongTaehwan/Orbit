@@ -8,7 +8,7 @@ import { test, expect, type Page } from "@playwright/test";
  * 앱 내 링크 이동으로 "80% 로 봤다가 100% 로 돌아오는" 흐름을 재현한다.
  */
 
-const API = "http://localhost:8000";
+const API = "http://localhost:3000/api";
 const base = { id: 7, name: "파이썬 기초", difficulty: "easy" as const, created_at: "2026-01-01T00:00:00Z" };
 const at80 = { ...base, record_count: 4, progress: 80, is_completed: false };
 const at100 = { ...base, record_count: 5, progress: 100, is_completed: true };

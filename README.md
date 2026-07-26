@@ -118,6 +118,14 @@ fastapi dev app/main.py
 
 > 배포 관련 값(`CORS_ORIGINS`, `GOOGLE_REDIRECT_URI`, `FRONTEND_URL`, 쿠키 속성)은 비워두면 로컬 기본값으로 동작합니다.
 > ⚠️ 실제 키 값은 `.env`에만 두고 **절대 커밋하지 마세요.** (`.env.example`에는 형식·설명만)
+>
+> **인증은 프론트의 `/api` 프록시(`next.config.ts` rewrites)를 통해 이뤄집니다.** 브라우저는 프론트 오리진하고만
+> 통신하므로 세션 쿠키가 same-origin 으로 유지돼, 모바일 브라우저의 크로스사이트 쿠키 차단에 걸리지 않습니다.
+> 따라서 배포 시:
+> - 프론트(Vercel) 환경변수에 `BACKEND_ORIGIN=https://<railway 주소>` 등록
+> - 백엔드 `GOOGLE_REDIRECT_URI` 와 구글 콘솔 "승인된 리디렉션 URI" 는 **프론트 주소 + `/api/auth/google/callback`**
+>   (예: `https://orbit-xxx.vercel.app/api/auth/google/callback`)
+> - 쿠키는 `COOKIE_SAMESITE=lax`, `COOKIE_SECURE=true` 로 충분 (`none` 불필요)
 
 ### 2. 프론트엔드
 
@@ -126,7 +134,7 @@ cd frontend
 npm install
 
 # .env.local 생성 후 아래 값 작성
-#   NEXT_PUBLIC_API_URL=http://localhost:8000   (기본값과 동일 · 배포 시 백엔드 주소로 변경)
+#   BACKEND_ORIGIN=http://localhost:8000   (Next /api 프록시가 이 주소로 전달 · 배포 시 백엔드 주소로 변경)
 npm run dev
 # → http://localhost:3000
 ```

@@ -4,7 +4,7 @@ import { test, expect, type Page } from "@playwright/test";
  * 빈 상태 e2e — 신규 사용자 흐름의 유도 표시를 확인한다.
  */
 
-const API = "http://localhost:8000";
+const API = "http://localhost:3000/api";
 const auth = { id: 1, email: "u@e.com", name: "U", picture: null, created_at: "2026-01-01T00:00:00Z" };
 
 async function mockAuth(page: Page) {

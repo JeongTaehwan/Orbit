@@ -5,7 +5,7 @@ import { test, expect } from "@playwright/test";
  * 행성 상세 → 목록 → 작성 → 저장 → 읽기 전체 흐름과 뒤로가기·URL 직접 접근을 검증.
  */
 
-const API = "http://localhost:8000";
+const API = "http://localhost:3000/api";
 
 const planet = {
   id: 7,

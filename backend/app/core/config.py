@@ -45,9 +45,13 @@ CORS_ORIGINS = [
 
 # ── 로컬 개발용 기본값 (비밀 아님) — 배포 시 실제 주소로 오버라이드 ──
 # 구글 콘솔의 "승인된 리디렉션 URI" 에 이 값을 등록해야 한다.
+# 콜백은 프론트의 /api 프록시를 거친다(프론트 next.config.ts rewrites → 백엔드).
+#   → 브라우저는 프론트 오리진만 상대하므로 세션 쿠키가 same-origin(퍼스트파티)으로 유지됨.
+# 로컬 기본값: http://localhost:3000/api/auth/google/callback
+# 배포 예:    https://orbit-xxx.vercel.app/api/auth/google/callback
 GOOGLE_REDIRECT_URI = (
     os.getenv("GOOGLE_REDIRECT_URI")
-    or "http://localhost:8000/auth/google/callback"
+    or "http://localhost:3000/api/auth/google/callback"
 )
 # 로그인 완료 후 브라우저를 돌려보낼 프론트 주소.
 FRONTEND_URL = os.getenv("FRONTEND_URL") or "http://localhost:3000"
@@ -55,11 +59,12 @@ FRONTEND_URL = os.getenv("FRONTEND_URL") or "http://localhost:3000"
 # 세션 쿠키
 SESSION_COOKIE_NAME = "orbit_session"
 SESSION_MAX_AGE = 60 * 60 * 24 * 7  # 7일(초)
-# 크로스 도메인 쿠키:
-#   배포에서는 프론트(vercel.app)와 백엔드(railway.app)가 다른 사이트라,
-#   브라우저가 fetch 에 세션 쿠키를 실어 보내려면 SameSite=None; Secure 여야 한다.
-#   → 배포: COOKIE_SAMESITE=none, COOKIE_SECURE=true
-#   → 로컬(http): 기본값 lax + Secure=false (SameSite=None 은 Secure 없이는 거부됨)
+# 세션 쿠키 SameSite/Secure:
+#   프론트의 /api 프록시 덕분에 브라우저는 프론트 오리진하고만 통신한다(same-origin).
+#   따라서 크로스사이트용 SameSite=None 이 필요 없고, 더 안전하고 모바일에서도 잘 동작하는
+#   SameSite=Lax 로 충분하다. (구글 콜백은 top-level GET 이라 Lax 쿠키가 정상 전송됨)
+#   → 배포(https): COOKIE_SAMESITE=lax, COOKIE_SECURE=true
+#   → 로컬(http):  기본값 lax + Secure=false
 COOKIE_SAMESITE = (os.getenv("COOKIE_SAMESITE") or "lax").lower()
 COOKIE_SECURE = (os.getenv("COOKIE_SECURE") or "false").lower() == "true"
 

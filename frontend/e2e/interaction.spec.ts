@@ -7,7 +7,7 @@ import { test, expect, type Page } from "@playwright/test";
  * 트리거는 완성 축하와 같은 캐시-diff 원칙 — 처음 볼 땐 재생 안 함.
  */
 
-const API = "http://localhost:8000";
+const API = "http://localhost:3000/api";
 const base = { id: 7, name: "P", difficulty: "normal" as const, created_at: "2026-01-01T00:00:00Z" };
 
 async function mock(page: Page) {

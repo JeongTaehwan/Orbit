@@ -13,7 +13,9 @@ export type { Difficulty, LearningRecord, Planet, RecordSummary } from "@/types/
 export type { Streak } from "@/types/streak";
 export type { User } from "@/types/user";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// 항상 같은 오리진의 /api 로만 호출한다. next.config.ts 의 rewrites 가
+// /api/* 를 백엔드로 프록시하므로, 브라우저 입장엔 same-origin → 세션 쿠키가 그대로 오간다.
+const BASE_URL = "/api";
 
 /** 구글 로그인 시작 URL (전체 페이지 이동으로 사용) */
 export const GOOGLE_LOGIN_URL = `${BASE_URL}/auth/google`;
