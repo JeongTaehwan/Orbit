@@ -10,10 +10,8 @@
 
 import { useEffect, useState } from "react";
 import { PenLine } from "lucide-react";
-import { Button, Heading, Text } from "@usetaehwan/ui";
+import { Button, EmptyState, Heading, OrbitLoader, Text } from "@usetaehwan/ui";
 import { TransitionLink } from "@/components/TransitionLink";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { OrbitLoader } from "@/components/ui/OrbitLoader";
 import { api } from "@/lib/api";
 import type { RecordSummary } from "@/types/planet";
 import { RecordPageFrame } from "./RecordPageFrame";

@@ -11,10 +11,9 @@
  */
 
 import { ArrowLeft } from "lucide-react";
-import { Container } from "@usetaehwan/ui";
+import { Container, OrbitLoader } from "@usetaehwan/ui";
 import { Header } from "@/components/Header";
 import { TransitionLink } from "@/components/TransitionLink";
-import { OrbitLoader } from "@/components/ui/OrbitLoader";
 import { useRequireAuth } from "@/features/auth";
 
 interface Props {

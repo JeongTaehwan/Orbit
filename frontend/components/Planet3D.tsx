@@ -18,7 +18,7 @@ import dynamic from "next/dynamic";
 import type { Difficulty } from "@/types/planet";
 import { difficultyLabel } from "@/lib/utils/difficulty";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
-import { OrbitLoader } from "@/components/ui/OrbitLoader";
+import { OrbitLoader } from "@usetaehwan/ui";
 
 export interface Planet3DProps {
   /** 테라포밍 진행도 0~100 */
