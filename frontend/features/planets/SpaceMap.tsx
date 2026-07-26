@@ -2,15 +2,12 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { Button, Container, Text } from "@usetaehwan/ui";
+import { Button, Container, EmptyState, Modal, OrbitLoader, Text } from "@usetaehwan/ui";
 import { Header } from "@/components/Header";
-import { Modal } from "@/components/ui/Modal";
 import { useRequireAuth } from "@/features/auth";
 import { api } from "@/lib/api";
 import { cachePlanets, getCachedPlanets } from "@/lib/planetCache";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { OrbitLoader } from "@/components/ui/OrbitLoader";
 import { StreakCard } from "@/features/streak/StreakCard";
 import type { Planet } from "@/types/planet";
 import type { Streak } from "@/types/streak";

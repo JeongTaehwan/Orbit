@@ -10,8 +10,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Text } from "@usetaehwan/ui";
-import { OrbitLoader } from "@/components/ui/OrbitLoader";
+import { OrbitLoader, Text } from "@usetaehwan/ui";
 import { api } from "@/lib/api";
 import type { LearningRecord } from "@/types/planet";
 import { MarkdownContent } from "./MarkdownContent";

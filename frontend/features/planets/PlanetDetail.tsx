@@ -3,11 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileText, PenLine } from "lucide-react";
-import { Badge, Button, Container, Heading, Text } from "@usetaehwan/ui";
+import { Badge, Button, Container, Heading, OrbitLoader, ProgressBar, Text } from "@usetaehwan/ui";
 import { Header } from "@/components/Header";
 import { TransitionLink } from "@/components/TransitionLink";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { OrbitLoader } from "@/components/ui/OrbitLoader";
 import { useRequireAuth } from "@/features/auth";
 import { PlanetShowcase } from "@/features/planets/PlanetShowcase";
 import { api } from "@/lib/api";

@@ -8,6 +8,9 @@
 /* 패키지 기본 토큰 (웜 뉴트럴 + 타이포/스페이싱/라운드/섀도우) */
 @import "@usetaehwan/ui/tokens.css";
 
+/* 패키지 컴포넌트 런타임 스타일 (OrbitLoader, EmptyState 의 keyframe 연출) */
+@import "@usetaehwan/ui/styles.css";
+
 /* ── Orbit 우주 테마 ──
    컬러 토큰만 덮어쓴다. 타이포/스페이싱/라운드/섀도우는 패키지 값 유지.
    Tailwind v4 @theme 는 병합되며 같은 변수는 나중 선언이 이긴다 → 충돌 없음.
@@ -725,80 +728,8 @@ body {
   }
 }
 
-/* ── 테마 로더: 중심을 도는 위성 (앱 이름 Orbit) ── */
-.orbit-loader {
-  position: relative;
-  display: inline-block;
-  width: var(--size, 40px);
-  height: var(--size, 40px);
-}
-.orbit-loader__ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--color-brand) 22%, transparent);
-}
-.orbit-loader__core {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 20%;
-  height: 20%;
-  border-radius: 50%;
-  background: var(--color-brand-hover);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--color-brand) 60%, transparent);
-}
-.orbit-loader__spin {
-  position: absolute;
-  inset: 0;
-  animation: orbit-loader-spin 0.9s linear infinite;
-}
-.orbit-loader__sat {
-  position: absolute;
-  top: -3px;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  margin-left: -3px;
-  border-radius: 50%;
-  background: var(--color-brand);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--color-brand) 70%, transparent);
-}
-@keyframes orbit-loader-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* ── 빈 상태의 은은한 후광(텅 빈 우주에 홀로 빛나는 느낌) ── */
-.orbit-empty-orb {
-  position: relative;
-  display: grid;
-  place-items: center;
-}
-.orbit-empty-orb::before {
-  content: "";
-  position: absolute;
-  inset: -60%;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--color-brand) 22%, transparent) 0%,
-    transparent 60%
-  );
-  animation: orbit-empty-breathe 4.5s ease-in-out infinite;
-}
-@keyframes orbit-empty-breathe {
-  0%,
-  100% {
-    opacity: 0.5;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.85;
-    transform: scale(1.08);
-  }
-}
+/* OrbitLoader(테마 로더)·EmptyState(빈 상태 후광) 스타일은
+   @usetaehwan/ui/styles.css 로 이동 (usui-loader*, usui-empty-orb*). */
 
 /* ── 모션 최소화: 우주 배경·궤도·발광·등장 모두 정지 ── */
 @media (prefers-reduced-motion: reduce) {
@@ -806,9 +737,7 @@ body {
   .orbit-ring--spin,
   .orbit-planet-glow--pulse,
   .orbit-flame,
-  .orbit-pulse-halo,
-  .orbit-loader__spin,
-  .orbit-empty-orb::before {
+  .orbit-pulse-halo {
     animation: none !important;
   }
   .orbit-pulse-halo {
